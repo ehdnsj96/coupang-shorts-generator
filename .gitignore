@@ -1,0 +1,12 @@
+# Build & output artifacts
+output/
+__pycache__/
+*.pyc
+*.mp4
+*.log
+temp_*
+.nfs*
+*.tmp
+
+# Sub-repo git dir
+web/.git/

@@ -1,0 +1,36 @@
+{
+  "last_run_date": "2026-11-12",
+  "current_theme_index": 3,
+  "completed_slots": [
+    "2026-11-12_kitchen",
+    "2026-11-12_food"
+  ],
+  "used_items_by_theme": {
+    "kitchen": [
+      "kitchen_opener",
+      "kitchen_drain",
+      "kitchen_screen"
+    ],
+    "food": [
+      "food_chicken",
+      "food_friedrice",
+      "food_yogurt"
+    ]
+  },
+  "episode_counts_by_theme": {
+    "kitchen": 1,
+    "food": 1
+  },
+  "history": [
+    {
+      "slot": "2026-11-12_kitchen",
+      "date": "2026-11-12",
+      "topic": "주방 살림 혁명 1탄"
+    },
+    {
+      "slot": "2026-11-12_food",
+      "date": "2026-11-12",
+      "topic": "식비 절약 가성비 간편식 1탄"
+    }
+  ]
+}
