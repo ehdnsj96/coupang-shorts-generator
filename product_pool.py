@@ -138,17 +138,17 @@ THEMES: Dict[str, dict] = {
             ProductItem(
                 item_id="kitchen_opener",
                 title="전동 원터치 자동 오프너",
-                header_badge="원터치 자동 오프너",
+                header_badge="원터치 전동 오프너",
                 discount="30% 특가",
                 price="15,900원",
                 tag="로켓배송",
                 card_badge_left="★ 4.9 (후기 2,300개)",
                 card_badge_right="[댓글 01번 링크]",
-                caption1="버튼 하나로 뚜껑 자동 오픈!",
-                caption2="단단한 캔·병뚜껑 2초 컷",
-                voice_script="첫 번째는 전동 원터치 자동 오프너입니다. 꽉 닫힌 잼 병이나 와인도 버튼 한 번만 누르면 힘들이지 않고 2초 만에 쏙 열립니다.",
+                caption1="버튼 하나로 코르크 자동 오픈!",
+                caption2="단단한 와인 코르크 2초 컷",
+                voice_script="첫 번째는 전동 원터치 자동 오프너입니다. 꽉 닫힌 코르크도 버튼 한 번만 누르면 힘들이지 않고 2초 만에 쏙 열립니다.",
                 image_path=str(assets / "kitchen_opener.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%A0%84%EB%8F%99%20%EC%9B%90%ED%84%B0%EC%B9%98%20%EC%9E%90%EB%8F%99%20%EC%98%A4%ED%94%84%EB%84%88&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/np/search?q=%EC%A0%84%EB%8F%99%20%EC%99%80%EC%9D%B8%EC%98%A4%ED%94%84%EB%84%88&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="kitchen_drain",
@@ -194,37 +194,37 @@ THEMES: Dict[str, dict] = {
         "products": [
             ProductItem(
                 item_id="food_chicken",
-                title="곰곰 촉촉한 오븐구이 닭가슴살 10팩",
-                header_badge="겉촉속촉 닭가슴살",
+                title="굽네 닭가슴살 스테이크 매콤갈비맛",
+                header_badge="오븐구이 닭가슴살",
                 discount="로켓프레시 특가",
                 price="19,900원",
                 tag="로켓프레시",
                 card_badge_left="★ 4.9 (후기 12만+)",
                 card_badge_right="[프로필 01번 링크]",
-                caption1="퍽퍽함 제로! 육즙 가득 닭가슴살",
+                caption1="퍽퍽함 제로! 육즙 가득 스테이크",
                 caption2="식단 관리·단백질 보충 1위",
-                voice_script="첫 번째는 곰곰 촉촉한 오븐구이 닭가슴살입니다. 퍽퍽함이 전혀 없고 닭다리살처럼 부드러워서 식단 관리할 때 물리지 않고 매일 먹을 수 있어요.",
+                voice_script="첫 번째는 굽네 닭가슴살 스테이크입니다. 퍽퍽함이 전혀 없고 육즙 가득 부드러워서 식단 관리할 때 물리지 않고 매일 먹을 수 있어요.",
                 image_path=str(assets / "food_chicken.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EA%B3%B0%EA%B3%B0%20%EC%B4%89%EC%B4%89%ED%95%9C%20%EC%98%A4%EB%B8%90%EA%B5%AC%EC%9D%B4%20%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4%2010%ED%8C%A9&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/np/search?q=%EA%B5%BD%EB%84%A4%20%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4%20%EC%8A%A4%ED%85%8C%EC%9D%B4%ED%81%AC%20%EB%A7%A4%EC%BD%A4%EA%B0%88%EB%B9%84%EB%A7%9B&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="food_friedrice",
-                title="곰곰 한끼뚝딱 가성비 냉동 볶음밥 6종",
-                header_badge="한끼 2천원대 볶음밥",
+                title="프레시지 대파 삼겹 볶음밥",
+                header_badge="고소한 대파삼겹 볶음밥",
                 discount="로켓프레시 특가",
                 price="13,800원",
                 tag="로켓프레시",
                 card_badge_left="★ 4.8 (후기 9만+)",
                 card_badge_right="[프로필 02번 링크]",
                 caption1="전자레인지 3분 뚝딱 완성!",
-                caption2="배달 음식 생각 싹 사라지는 맛",
-                voice_script="두 번째는 곰곰 가성비 냉동 볶음밥 세트입니다. 배고플 때 전자레인지에 3분만 돌리면 전문점 볶음밥 맛이 나서 배달 음식 끊게 만들어 줍니다.",
+                caption2="고소한 대파 기름 풍미 가득",
+                voice_script="두 번째는 프레시지 대파 삼겹 볶음밥입니다. 고소한 삼겹살과 대파 기름 풍미가 가득해서 전자레인지에 삼분만 돌리면 전문점 볶음밥 맛이 납니다.",
                 image_path=str(assets / "food_friedrice.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EA%B3%B0%EA%B3%B0%20%ED%95%9C%EB%81%BC%EB%9A%9D%EB%94%B1%20%EA%B0%80%EC%84%B1%EB%B9%84%20%EB%83%89%EB%8F%99%20%EB%B3%B6%EC%9D%8C%EB%B0%A5%206%EC%A2%85&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/np/search?q=%ED%94%84%EB%A0%88%EC%8B%9C%EC%A7%80%20%EB%8C%80%ED%8C%8C%20%EC%82%BC%EA%B2%B9%20%EB%B3%B6%EC%9D%8C%EB%B0%A5&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="food_yogurt",
-                title="그릭데이 시그니처 대용량 그릭요거트",
+                title="꾸덕한 수제 그릭요거트 대용량",
                 header_badge="꾸덕함 끝판왕 그릭요거트",
                 discount="특가할인",
                 price="14,800원",
@@ -233,9 +233,9 @@ THEMES: Dict[str, dict] = {
                 card_badge_right="[프로필 03번 링크]",
                 caption1="치즈처럼 꾸덕한 리얼 그릭!",
                 caption2="바쁜 아침 건강한 1분 식사",
-                voice_script="세 번째는 그릭데이 시그니처 대용량 그릭요거트입니다. 크림치즈처럼 진하고 꾸덕해서 꿀이나 그래놀라 얹어 먹으면 아침 식사 대용으로 최고예요.",
+                voice_script="세 번째는 꾸덕한 수제 그릭요거트입니다. 크림치즈처럼 진하고 꾸덕해서 꿀이나 그래놀라 얹어 먹으면 아침 식사 대용으로 최고예요.",
                 image_path=str(assets / "food_yogurt.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EA%B7%B8%EB%A6%AD%EB%8D%B0%EC%9D%B4%20%EC%8B%9C%EA%B7%B8%EB%8B%88%EC%B2%98%20%EB%8C%80%EC%9A%A9%EB%9F%89%20%EA%B7%B8%EB%A6%AD%EC%9A%94%EA%B1%B0%ED%8A%B8&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/np/search?q=%EA%BE%B8%EB%8D%95%ED%95%9C%20%EA%B7%B8%EB%A6%AD%EC%9A%94%EA%B1%B0%ED%8A%B8&lptag=AF7086198"
             )
         ]
     },
