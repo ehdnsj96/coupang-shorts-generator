@@ -94,7 +94,8 @@ class YouTubeUploader:
         description: str,
         tags: List[str],
         category_id: str = "22",  # 22: People & Blogs, 24: Entertainment, 26: Howto & Style
-        privacy_status: str = "public"  # 'public', 'unlisted', 'private'
+        privacy_status: str = "public",  # 'public', 'unlisted', 'private'
+        thumbnail_path: Optional[Path] = None
     ) -> Optional[str]:
         video_path = Path(video_path)
         if not video_path.exists():
@@ -147,6 +148,19 @@ class YouTubeUploader:
             shorts_url = f"https://youtube.com/shorts/{video_id}"
             print(f"✨ 유튜브 쇼츠 업로드 성공!")
             print(f"🔗 쇼츠 링크: {shorts_url}")
+
+            # 맞춤 썸네일 자동 등록
+            if thumbnail_path and Path(thumbnail_path).exists():
+                try:
+                    thumb_media = MediaFileUpload(str(thumbnail_path), mimetype="image/png")
+                    self.service.thumbnails().set(
+                        videoId=video_id,
+                        media_body=thumb_media
+                    ).execute()
+                    print(f"🖼️ 유튜브 맞춤 썸네일 자동 등록 완료: {Path(thumbnail_path).name}")
+                except Exception as te:
+                    print(f"⚠️ 맞춤 썸네일 자동 등록 안내 (채널 1회 전화번호 인증 필요시 스튜디오에서 적용): {te}")
+
             return shorts_url
 
         except HttpError as e:

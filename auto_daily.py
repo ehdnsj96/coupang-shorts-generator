@@ -173,6 +173,14 @@ def run_daily_job(
     print(f"\n🎥 영상 인코딩 및 최종 병합 중 (예상 길이: 약 {int(total_duration)}초)...")
     success = video_builder.build_shorts_video(slide_items, output_video_path)
 
+    # 1번 훅 인트로 슬라이드를 비디오와 동일한 이름의 썸네일 파일로 자동 보존
+    thumb_path = output_video_path.with_suffix(".thumb.png")
+    hook_img = work_dir / "slide_00.png"
+    if hook_img.exists():
+        import shutil
+        shutil.copy(hook_img, thumb_path)
+        print(f"🖼️ 1번 훅 썸네일 이미지 자동 보존 완료: {thumb_path.name}")
+
     # 임시 디렉터리 정리
     import shutil
     shutil.rmtree(work_dir, ignore_errors=True)
@@ -184,6 +192,8 @@ def run_daily_job(
     print(f"\n=======================================================")
     print(f"✨ 슬롯 [{current_hour_slot}] 쇼츠 영상 자동 제작 완료!")
     print(f"📁 파일 위치: {output_video_path.resolve()}")
+    if thumb_path.exists():
+        print(f"🖼️ 썸네일 위치: {thumb_path.resolve()}")
     print(f"⏱️ 영상 길이: 약 {int(total_duration)}초 (세로 1080x1920)")
     print(f"=======================================================\n")
 
@@ -198,7 +208,8 @@ def run_daily_job(
             title=selected_script.youtube_title,
             description=selected_script.youtube_description,
             tags=selected_script.hashtags,
-            privacy_status="public"
+            privacy_status="public",
+            thumbnail_path=thumb_path if thumb_path.exists() else None
         )
 
     caption_text = (
