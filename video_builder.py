@@ -42,17 +42,24 @@ class VideoBuilder:
                     str(clip_p)
                 ]
 
-                res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+                res = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    check=False
+                )
                 if res.returncode != 0:
                     print(f"[VideoBuilder] 클립 {i} 생성 실패: {res.stderr[-500:]}")
                     return False
                 clip_paths.append(clip_p)
 
-            # concat 리스트 파일 작성
+            # concat 리스트 파일 작성 (윈도우 역슬래시 이스케이프 오류 방지 위해 as_posix 사용)
             concat_list_file = temp_dir / "concat_list.txt"
             with open(concat_list_file, "w", encoding="utf-8") as f:
                 for cp in clip_paths:
-                    f.write(f"file '{cp.resolve()}'\n")
+                    f.write(f"file '{cp.resolve().as_posix()}'\n")
 
             # 전체 클립 무손실 병합
             concat_cmd = [
@@ -63,7 +70,14 @@ class VideoBuilder:
                 "-c", "copy",
                 str(output_video_path)
             ]
-            concat_res = subprocess.run(concat_cmd, capture_output=True, text=True, check=False)
+            concat_res = subprocess.run(
+                concat_cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False
+            )
             if concat_res.returncode != 0:
                 print(f"[VideoBuilder] 최종 병합 실패: {concat_res.stderr[:200]}")
                 return False

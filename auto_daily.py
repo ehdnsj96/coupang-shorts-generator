@@ -2,12 +2,22 @@ import argparse
 import json
 import os
 import sys
+import io
 import time
 import urllib.parse
 import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+
+# 윈도우 환경 한글(CP949) 인코딩 충돌 방지 및 UTF-8 강제
+if sys.platform == "win32":
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from models import ShortsScript
 from episode_builder import get_next_dynamic_episode
 from slide_renderer import SlideRenderer

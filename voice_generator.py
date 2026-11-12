@@ -23,6 +23,8 @@ class VoiceGenerator:
                 [self.ffmpeg_exe, "-i", str(audio_path)],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=False
             )
             match = re.search(r"Duration:\s*(\d+):(\d+):(\d+\.\d+)", res.stderr)
