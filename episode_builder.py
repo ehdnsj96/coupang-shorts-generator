@@ -9,7 +9,7 @@ def build_episode(theme_key: str, episode_num: int, items: List[ProductItem]) ->
     assets = config.ASSETS_DIR
 
     theme_name = theme_info["theme_name"]
-    ep_prefix = f"[{episode_num}탄] " if episode_num > 1 else ""
+    ep_prefix = ""
 
     youtube_title = f"{ep_prefix}아직도 이거 모르고 산다고? {theme_name} 쿠팡 꿀템 TOP 3 #shorts"
 

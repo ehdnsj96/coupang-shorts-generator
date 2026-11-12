@@ -89,6 +89,7 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         cat_key = it.get("category_key", "living")
         cat_name, cat_emoji = category_map.get(cat_key, ("자취·리빙", "🏠"))
         badge_class = "rocket-badge" if "로켓" in it.get("tag", "") else "discount-badge"
+        item_num = it.get("item_num", 1)
 
         c_html = f"""
         <a class="product-card catalog-card" 
@@ -100,6 +101,7 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
            data-desc="{it.get('desc', '').lower()}">
           <div class="product-thumb-wrap">
             <img class="product-thumb" src="assets/{it['img_name']}" alt="{it['title']}" loading="lazy">
+            <div class="item-num-badge">0{item_num}번</div>
             <div class="cat-pill-badge">{cat_emoji} {cat_name}</div>
           </div>
           <div class="product-info">
@@ -639,13 +641,13 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
       const query = searchInput.value.trim().toLowerCase();
       let visibleCount = 0;
 
-      if (query.length > 0) {{
+      if (query.length > 0 || currentFilter !== "all") {{
         featuredSection.style.display = "none";
-        catalogTitle.innerText = "🔍 '" + query + "' 검색 결과";
-        clearBtn.style.display = "flex";
+        catalogTitle.innerText = query.length > 0 ? "🔍 '" + query + "' 검색 결과" : "📦 " + (document.querySelector(".pill-btn.active")?.innerText || "카테고리") + " 꿀템";
+        clearBtn.style.display = query.length > 0 ? "flex" : "none";
       }} else {{
         featuredSection.style.display = "block";
-        catalogTitle.innerText = currentFilter === "all" ? "📦 누적 추천 꿀템 도감" : "📦 카테고리 추천 꿀템";
+        catalogTitle.innerText = "📦 누적 추천 꿀템 도감";
         clearBtn.style.display = "none";
       }}
 
@@ -745,13 +747,18 @@ def update_link_page(theme_name: str, items: List[ProductItem], auto_push: bool 
     if auto_push and git_dir.exists():
         try:
             print("🚀 GitHub Pages 저장소로 누적형 링크 페이지 배포 중...")
+            subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=WEB_DIR, check=False)
             subprocess.run(["git", "add", "."], cwd=WEB_DIR, check=True)
-            subprocess.run(["git", "commit", "-m", f"Update link page: {theme_name} ({len(history)} items)"], cwd=WEB_DIR, check=True)
-            subprocess.run(["git", "push", "origin", "main"], cwd=WEB_DIR, check=True)
-            print("✅ GitHub Pages 배포 완료!")
+            status = subprocess.run(["git", "status", "--porcelain"], cwd=WEB_DIR, capture_output=True, text=True)
+            if status.stdout.strip():
+                subprocess.run(["git", "commit", "-m", f"Update link page: {theme_name} ({len(history)} items)"], cwd=WEB_DIR, check=True)
+                subprocess.run(["git", "push", "origin", "main"], cwd=WEB_DIR, check=True)
+                print("✅ GitHub Pages 배포 완료!")
+            else:
+                print("ℹ️ 변경된 상품 내용이 없어 추가 푸시를 건너뜁니다.")
             return True
         except Exception as e:
-            print(f"⚠️ Git 푸시 중 오류 (원격 인증 확인 필요): {e}")
+            print(f"⚠️ Git 푸시 중 오류: {e}")
             return False
 
     return True
