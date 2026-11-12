@@ -747,13 +747,18 @@ def update_link_page(theme_name: str, items: List[ProductItem], auto_push: bool 
     if auto_push and git_dir.exists():
         try:
             print("🚀 GitHub Pages 저장소로 누적형 링크 페이지 배포 중...")
-            subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=WEB_DIR, check=False)
+            # 원격 최신 커밋을 받아와 로컬 HEAD를 맞춤으로써 non-fast-forward 충돌 방지
+            subprocess.run(["git", "fetch", "origin", "main"], cwd=WEB_DIR, check=False)
+            subprocess.run(["git", "reset", "origin/main"], cwd=WEB_DIR, check=False)
             subprocess.run(["git", "add", "."], cwd=WEB_DIR, check=True)
             status = subprocess.run(["git", "status", "--porcelain"], cwd=WEB_DIR, capture_output=True, text=True)
             if status.stdout.strip():
                 subprocess.run(["git", "commit", "-m", f"Update link page: {theme_name} ({len(history)} items)"], cwd=WEB_DIR, check=True)
-                subprocess.run(["git", "push", "origin", "main"], cwd=WEB_DIR, check=True)
-                print("✅ GitHub Pages 배포 완료!")
+                push_res = subprocess.run(["git", "push", "origin", "main"], cwd=WEB_DIR, capture_output=True, text=True)
+                if push_res.returncode == 0:
+                    print("✅ GitHub Pages 배포 완료!")
+                else:
+                    print(f"⚠️ Git 푸시 실패: {push_res.stderr.strip()}")
             else:
                 print("ℹ️ 변경된 상품 내용이 없어 추가 푸시를 건너뜁니다.")
             return True
