@@ -27,14 +27,71 @@ def copy_product_assets():
             shutil.copy(p, dst)
 
 
+def sanitize_history(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """과거 더미나 중복 아이템을 정리하고, 4대 활성 영상의 12개 제품과 번호(1~3)를 완벽히 보장"""
+    product_lookup = {}
+    for theme_key, theme_data in THEMES.items():
+        for idx, p in enumerate(theme_data["products"]):
+            product_lookup[p.title] = (theme_key, idx + 1, p)
+            product_lookup[p.coupang_url] = (theme_key, idx + 1, p)
+            product_lookup[p.item_id] = (theme_key, idx + 1, p)
+
+    cleaned = []
+    seen = set()
+    for item in items:
+        match = (
+            product_lookup.get(item.get("title"))
+            or product_lookup.get(item.get("coupang_url"))
+            or product_lookup.get(item.get("item_id"))
+        )
+        if match:
+            theme_key, num, p = match
+            if p.item_id in seen:
+                continue
+            seen.add(p.item_id)
+            img_file = Path(p.image_path).name if getattr(p, "image_path", None) else f"{p.item_id}.png"
+            cleaned.append({
+                "item_id": p.item_id,
+                "title": p.title,
+                "price": p.price,
+                "tag": p.tag or p.discount,
+                "desc": p.caption1 or p.caption2 or p.header_badge,
+                "img_name": img_file,
+                "coupang_url": p.coupang_url,
+                "category_key": theme_key,
+                "item_num": num
+            })
+
+    # 누락된 테마 아이템이 있으면 12종 완성
+    for theme_key in ["kitchen", "living", "food", "desk"]:
+        for idx, p in enumerate(THEMES[theme_key]["products"]):
+            if p.item_id not in seen:
+                seen.add(p.item_id)
+                img_file = Path(p.image_path).name if getattr(p, "image_path", None) else f"{p.item_id}.png"
+                cleaned.append({
+                    "item_id": p.item_id,
+                    "title": p.title,
+                    "price": p.price,
+                    "tag": p.tag or p.discount,
+                    "desc": p.caption1 or p.caption2 or p.header_badge,
+                    "img_name": img_file,
+                    "coupang_url": p.coupang_url,
+                    "category_key": theme_key,
+                    "item_num": idx + 1
+                })
+
+    return cleaned
+
+
 def load_history() -> List[Dict[str, Any]]:
     if HISTORY_FILE.exists():
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                return sanitize_history(data)
         except Exception:
             pass
-    return []
+    return sanitize_history([])
 
 
 def save_history(history: List[Dict[str, Any]]):
@@ -684,38 +741,6 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
 
 
 def update_link_page(theme_name: str, items: List[ProductItem], auto_push: bool = True) -> bool:
-    history = load_history()
-
-    # Prepend new featured items to history if not present
-    for i, item in enumerate(items[:3]):
-        img_file = Path(item.image_path).name if getattr(item, "image_path", None) else f"{item.item_id}.png"
-        h_entry = {
-            "title": item.title,
-            "price": item.price,
-            "tag": item.tag or item.discount,
-            "desc": item.caption1 or item.caption2 or item.header_badge,
-            "img_name": img_file,
-            "coupang_url": item.coupang_url,
-            "category_key": "living" if "living" in item.item_id else ("kitchen" if "kitchen" in item.item_id else ("food" if "food" in item.item_id else "desk")),
-            "item_num": i + 1
-        }
-        # 동일 상품이 있으면 업데이트, 없으면 추가
-        existing_idx = next((idx for idx, x in enumerate(history) if x.get("coupang_url") == item.coupang_url or x.get("title") == item.title), None)
-        if existing_idx is not None:
-            history[existing_idx] = h_entry
-        else:
-            history.append(h_entry)
-
-    save_history(history)
-
-    # Render HTML using ONLY history items (cumulative)
-    html_content = generate_html(theme_name, items, history)
-    index_file = WEB_DIR / "index.html"
-    with open(index_file, "w", encoding="utf-8") as f:
-        f.write(html_content)
-
-    print(f"📄 누적형 모바일 링크 페이지 HTML 생성 완료 ({len(history)}개 상품): {index_file}")
-
     git_dir = WEB_DIR / ".git"
 
     # Git 저장소가 로컬에 없으면 원격 저장소에서 자동 클론
@@ -731,12 +756,52 @@ def update_link_page(theme_name: str, items: List[ProductItem], auto_push: bool 
         except Exception as e:
             print(f"⚠️ Git 저장소 자동 연결 실패 (SSH 또는 로컬 인증 필요): {e}")
 
+    # 원격 최신 커밋을 받아와 로컬 HEAD를 맞춤으로써 구버전 덮어쓰기 및 충돌 방지
+    if auto_push and git_dir.exists():
+        try:
+            subprocess.run(["git", "fetch", "origin", "main"], cwd=WEB_DIR, check=False)
+            subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=WEB_DIR, check=False)
+        except Exception:
+            pass
+
+    history = load_history()
+
+    # Prepend new featured items to history if not present
+    for i, item in enumerate(items[:3]):
+        img_file = Path(item.image_path).name if getattr(item, "image_path", None) else f"{item.item_id}.png"
+        cat_key = "living" if "living" in item.item_id else ("kitchen" if "kitchen" in item.item_id else ("food" if "food" in item.item_id else "desk"))
+        h_entry = {
+            "item_id": item.item_id,
+            "title": item.title,
+            "price": item.price,
+            "tag": item.tag or item.discount,
+            "desc": item.caption1 or item.caption2 or item.header_badge,
+            "img_name": img_file,
+            "coupang_url": item.coupang_url,
+            "category_key": cat_key,
+            "item_num": i + 1
+        }
+        # 동일 상품이 있으면 업데이트, 없으면 추가
+        existing_idx = next((idx for idx, x in enumerate(history) if x.get("coupang_url") == item.coupang_url or x.get("title") == item.title or x.get("item_id") == item.item_id), None)
+        if existing_idx is not None:
+            history[existing_idx] = h_entry
+        else:
+            history.append(h_entry)
+
+    history = sanitize_history(history)
+    save_history(history)
+
+    # Render HTML using ONLY history items (cumulative)
+    html_content = generate_html(theme_name, items, history)
+    index_file = WEB_DIR / "index.html"
+    with open(index_file, "w", encoding="utf-8") as f:
+        f.write(html_content)
+
+    print(f"📄 누적형 모바일 링크 페이지 HTML 생성 완료 ({len(history)}개 상품): {index_file}")
+
     if auto_push and git_dir.exists():
         try:
             print("🚀 GitHub Pages 저장소로 누적형 링크 페이지 배포 중...")
-            # 원격 최신 커밋을 받아와 로컬 HEAD를 맞춤으로써 non-fast-forward 충돌 방지
-            subprocess.run(["git", "fetch", "origin", "main"], cwd=WEB_DIR, check=False)
-            subprocess.run(["git", "reset", "origin/main"], cwd=WEB_DIR, check=False)
             subprocess.run(["git", "add", "."], cwd=WEB_DIR, check=True)
             status = subprocess.run(["git", "status", "--porcelain"], cwd=WEB_DIR, capture_output=True, text=True)
             if status.stdout.strip():
