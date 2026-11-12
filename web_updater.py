@@ -53,45 +53,23 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         "desk": ("데스크테리어", "💻"),
     }
 
-    # 1. Featured Cards HTML (오늘 최신 영상 속 꿀템 3종)
-    featured_cards = []
-    for i, item in enumerate(featured_items[:3]):
-        img_name = Path(item.image_path).name
-        badge_class = "rocket-badge" if "로켓" in item.tag else "discount-badge"
-        badge_text = item.tag if "로켓" in item.tag else item.discount
+    # 동영상 테마별 그룹 빌드
+    categories = [
+        ("kitchen", "🍳 주방·살림", "🍳 주방 살림 혁명 TOP 3"),
+        ("living", "🏠 자취·리빙", "🏠 자취생 삶의 질 떡상 TOP 3"),
+        ("food", "🥗 식비·간편식", "🥗 식비 절약 가성비 간편식 TOP 3"),
+        ("desk", "💻 데스크", "💻 직장인 데스크테리어 TOP 3"),
+    ]
 
-        card = f"""
-        <a class="product-card featured-card" href="{item.coupang_url}" target="_blank" rel="noopener noreferrer">
-          <div class="product-thumb-wrap">
-            <img class="product-thumb" src="assets/{img_name}" alt="{item.title}" loading="lazy">
-            <div class="item-num-badge">0{i+1}번</div>
-          </div>
-          <div class="product-info">
-            <div class="product-tag">{item.caption2 or item.header_badge}</div>
-            <div class="product-name">{item.title}</div>
-            <div class="product-meta">
-              <span class="price-val">{item.price}</span>
-              <span class="{badge_class}">{badge_text}</span>
-            </div>
-          </div>
-          <div class="btn-buy">
-            구매하기 ➔
-          </div>
-        </a>"""
-        featured_cards.append(card)
+    section_blocks = []
+    for cat_key, pill_title, sec_title in categories:
+        cat_items = [x for x in history_items if x.get("category_key") == cat_key]
+        cat_items.sort(key=lambda x: x.get("item_num", 1))
 
-    featured_html = "\n".join(featured_cards)
-    featured_style = "" if featured_cards else 'style="display: none;"'
-
-    # 2. 누적 도감 카드 (실제로 발행된 영상에 나온 상품들만 history에서 로드)
-    catalog_cards = []
-    for it in history_items:
-        cat_key = it.get("category_key", "living")
-        cat_name, cat_emoji = category_map.get(cat_key, ("자취·리빙", "🏠"))
-        badge_class = "rocket-badge" if "로켓" in it.get("tag", "") else "discount-badge"
-        item_num = it.get("item_num", 1)
-
-        c_html = f"""
+        cards_html = []
+        for it in cat_items:
+            badge_class = "rocket-badge" if "로켓" in it.get("tag", "") else "discount-badge"
+            c = f"""
         <a class="product-card catalog-card" 
            href="{it['coupang_url']}" 
            target="_blank" 
@@ -101,11 +79,11 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
            data-desc="{it.get('desc', '').lower()}">
           <div class="product-thumb-wrap">
             <img class="product-thumb" src="assets/{it['img_name']}" alt="{it['title']}" loading="lazy">
-            <div class="item-num-badge">0{item_num}번</div>
-            <div class="cat-pill-badge">{cat_emoji} {cat_name}</div>
+            <div class="item-num-badge">0{it.get('item_num', 1)}번</div>
+            <div class="cat-pill-badge">{pill_title}</div>
           </div>
           <div class="product-info">
-            <div class="product-tag">{it.get('desc', cat_name)}</div>
+            <div class="product-tag">{it.get('desc', '')}</div>
             <div class="product-name">{it['title']}</div>
             <div class="product-meta">
               <span class="price-val">{it['price']}</span>
@@ -116,14 +94,25 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
             최저가 ➔
           </div>
         </a>"""
-        catalog_cards.append(c_html)
+            cards_html.append(c)
 
-    if catalog_cards:
-        catalog_html = "\n".join(catalog_cards)
-        empty_catalog_html = ""
-    else:
-        catalog_html = ""
-        empty_catalog_html = """
+        if cards_html:
+            sec_html = f"""
+    <div class="video-group" data-group="{cat_key}">
+      <div class="video-group-header">
+        <span class="video-group-title">{sec_title}</span>
+        <span class="video-group-tag">영상 3종 추천</span>
+      </div>
+      <div class="product-list">
+        {''.join(cards_html)}
+      </div>
+    </div>"""
+            section_blocks.append(sec_html)
+
+    catalog_body = "\n".join(section_blocks)
+
+    if not section_blocks:
+        catalog_body = """
       <div id="catalogEmptyState" style="background: #ffffff; border-radius: 22px; padding: 36px 20px; text-align: center; box-shadow: 0 4px 18px rgba(0,0,0,0.03); margin-top: 4px;">
         <div style="font-size: 36px; margin-bottom: 10px;">🧪</div>
         <div style="font-size: 16px; font-weight: 800; color: #191f28; margin-bottom: 6px;">등록된 꿀템을 준비 중입니다</div>
@@ -557,48 +546,32 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         <button id="clearBtn" class="clear-btn" aria-label="검색어 지우기">✕</button>
       </div>
       <div class="category-pills">
-        <button class="pill-btn active" data-filter="all">🔥 전체 ({catalog_count})</button>
-        <button class="pill-btn" data-filter="living">🏠 자취·리빙</button>
+        <button class="pill-btn active" data-filter="all">🔥 전체 ({len(history_items)})</button>
         <button class="pill-btn" data-filter="kitchen">🍳 주방·살림</button>
+        <button class="pill-btn" data-filter="living">🏠 자취·리빙</button>
         <button class="pill-btn" data-filter="food">🥗 식비·간편식</button>
         <button class="pill-btn" data-filter="desk">💻 데스크</button>
       </div>
     </div>
 
-    <!-- 오늘 영상 속 꿀템 (Featured) -->
-    <div id="featuredSection" {featured_style}>
-      <div class="section-label">
-        오늘 영상 속 꿀템 <span class="badge-new">NEW</span>
-      </div>
-      <div class="product-list">
-{featured_html}
-      </div>
-    </div>
-
-    <!-- 누적 꿀템 검색 도감 -->
-    <div id="catalogSection">
-      <div class="section-label">
-        <span id="catalogTitle">📦 누적 추천 꿀템 도감</span>
-        <span id="matchCount" class="count-indicator">{catalog_count}개</span>
-      </div>
-      <div class="product-list" id="catalogList">
-{catalog_html}
-{empty_catalog_html}
-      </div>
+    <!-- 영상별 추천 꿀템 그룹 -->
+    <div id="catalogContainer">
+{catalog_body}
     </div>
 
     <!-- 검색 결과 없음 배너 -->
-    <div id="noResults" class="no-results">
-      <div class="no-results-icon">🔎</div>
-      <div class="no-results-title">찾으시는 꿀템이 아직 없나요?</div>
-      <div class="no-results-desc">쿠팡 공식몰에서 최저가 로켓배송 상품을 바로 찾아보세요!</div>
-      <a id="coupangSearchBtn" class="btn-coupang-search" href="https://www.coupang.com" target="_blank" rel="noopener noreferrer">
-        쿠팡에서 최저가 검색하기 ➔
+    <div id="noResults" class="no-results" style="display: none; text-align: center; padding: 40px 20px; background: #f9fafb; border-radius: 16px; margin-top: 10px;">
+      <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+      <div style="font-size: 15px; font-weight: 800; color: #191f28; margin-bottom: 6px;">검색된 꿀템이 없습니다</div>
+      <div style="font-size: 13px; color: #8b95a1; margin-bottom: 16px;">다른 키워드로 검색하거나 쿠팡에서 직접 찾아보세요!</div>
+      <a id="coupangSearchBtn" href="https://www.coupang.com" target="_blank" rel="noopener noreferrer"
+         style="display: inline-block; background: #0073e9; color: #ffffff; padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 800; text-decoration: none;">
+        쿠팡에서 최저가 검색 ➔
       </a>
     </div>
 
     <!-- 채널 링크 -->
-    <div class="section-label">
+    <div class="section-label" style="margin-top: 30px;">
       실시간 핫딜 &amp; 채널
     </div>
     <div class="extra-links">
@@ -628,10 +601,7 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
     const searchInput = document.getElementById("searchInput");
     const clearBtn = document.getElementById("clearBtn");
     const pillBtns = document.querySelectorAll(".pill-btn");
-    const catalogCards = document.querySelectorAll(".catalog-card");
-    const featuredSection = document.getElementById("featuredSection");
-    const catalogTitle = document.getElementById("catalogTitle");
-    const matchCount = document.getElementById("matchCount");
+    const videoGroups = document.querySelectorAll(".video-group");
     const noResults = document.getElementById("noResults");
     const coupangSearchBtn = document.getElementById("coupangSearchBtn");
 
@@ -639,37 +609,39 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
 
     function filterItems() {{
       const query = searchInput.value.trim().toLowerCase();
-      let visibleCount = 0;
+      let visibleCards = 0;
 
-      if (query.length > 0 || currentFilter !== "all") {{
-        featuredSection.style.display = "none";
-        catalogTitle.innerText = query.length > 0 ? "🔍 '" + query + "' 검색 결과" : "📦 " + (document.querySelector(".pill-btn.active")?.innerText || "카테고리") + " 꿀템";
-        clearBtn.style.display = query.length > 0 ? "flex" : "none";
-      }} else {{
-        featuredSection.style.display = "block";
-        catalogTitle.innerText = "📦 누적 추천 꿀템 도감";
-        clearBtn.style.display = "none";
-      }}
+      videoGroups.forEach(group => {{
+        const groupCat = group.getAttribute("data-group");
+        const cards = group.querySelectorAll(".catalog-card");
+        let groupVisible = 0;
 
-      catalogCards.forEach(card => {{
-        const cat = card.getAttribute("data-category");
-        const title = card.getAttribute("data-title");
-        const desc = card.getAttribute("data-desc");
+        const matchesGroupCat = (currentFilter === "all" || groupCat === currentFilter);
 
-        const matchesCat = (currentFilter === "all" || cat === currentFilter);
-        const matchesQuery = (query === "" || title.includes(query) || desc.includes(query));
+        cards.forEach(card => {{
+          const title = card.getAttribute("data-title") || "";
+          const desc = card.getAttribute("data-desc") || "";
+          const matchesQuery = (query === "" || title.includes(query) || desc.includes(query));
 
-        if (matchesCat && matchesQuery) {{
-          card.style.display = "flex";
-          visibleCount++;
+          if (matchesGroupCat && matchesQuery) {{
+            card.style.display = "flex";
+            groupVisible++;
+            visibleCards++;
+          }} else {{
+            card.style.display = "none";
+          }}
+        }});
+
+        if (groupVisible > 0) {{
+          group.style.display = "block";
         }} else {{
-          card.style.display = "none";
+          group.style.display = "none";
         }}
       }});
 
-      matchCount.innerText = visibleCount + "개";
+      clearBtn.style.display = query.length > 0 ? "flex" : "none";
 
-      if (visibleCount === 0) {{
+      if (visibleCards === 0) {{
         noResults.style.display = "block";
         const searchUrl = "https://www.coupang.com/np/search?q=" + encodeURIComponent(query || "자취꿀템") + "&lptag=AF7086198";
         coupangSearchBtn.href = searchUrl;
@@ -695,6 +667,15 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         filterItems();
       }});
     }});
+
+    // URL Hash support (#kitchen, #living, #food, #desk)
+    const hash = window.location.hash.replace("#", "");
+    if (hash && ["kitchen", "living", "food", "desk"].includes(hash)) {{
+      const targetBtn = document.querySelector(`.pill-btn[data-filter="${{hash}}"]`);
+      if (targetBtn) {{
+        targetBtn.click();
+      }}
+    }}
   </script>
 </body>
 </html>
@@ -706,18 +687,24 @@ def update_link_page(theme_name: str, items: List[ProductItem], auto_push: bool 
     history = load_history()
 
     # Prepend new featured items to history if not present
-    for item in items[:3]:
+    for i, item in enumerate(items[:3]):
+        img_file = Path(item.image_path).name if getattr(item, "image_path", None) else f"{item.item_id}.png"
         h_entry = {
             "title": item.title,
             "price": item.price,
             "tag": item.tag or item.discount,
             "desc": item.caption1 or item.caption2 or item.header_badge,
-            "img_name": f"{item.item_id}.png",
+            "img_name": img_file,
             "coupang_url": item.coupang_url,
-            "category_key": "living" if "living" in item.item_id else ("kitchen" if "kitchen" in item.item_id else ("food" if "food" in item.item_id else "desk"))
+            "category_key": "living" if "living" in item.item_id else ("kitchen" if "kitchen" in item.item_id else ("food" if "food" in item.item_id else "desk")),
+            "item_num": i + 1
         }
-        if not any(x.get("coupang_url") == item.coupang_url for x in history):
-            history.insert(0, h_entry)
+        # 동일 상품이 있으면 업데이트, 없으면 추가
+        existing_idx = next((idx for idx, x in enumerate(history) if x.get("coupang_url") == item.coupang_url or x.get("title") == item.title), None)
+        if existing_idx is not None:
+            history[existing_idx] = h_entry
+        else:
+            history.append(h_entry)
 
     save_history(history)
 

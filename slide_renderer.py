@@ -81,61 +81,120 @@ class SlideRenderer:
         img.save(str(output_path), format="PNG")
 
     def _render_hook_slide(self, slide: Slide) -> Image.Image:
-        """미니멀 클린 훅: 호기심 공백(Curiosity Gap) 극대화 미스터리 시크릿 카드"""
+        """센터 집중형 바이럴 훅: 모바일 상하단 잘림 0% · 카테고리 타깃 뱃지 + 초대형 볼드 타이틀 + 실물 3종 프리뷰"""
         img = self._draw_background()
-        draw = ImageDraw.Draw(img)
+        width, height = self.width, self.height
 
-        # 테마에 맞는 동적 상단 헤더
-        header_tag = slide.header_badge or "TOP 3 랭킹 공개 🚨"
-        header_title = slide.main_title.replace("\n", " ") if slide.main_title else "쿠팡 가성비 꿀템 TOP 3"
-        self._draw_top_header(draw, header_tag, header_title)
+        # 테마 판별 및 컬러 팔레트
+        title_str = (slide.main_title or "") + (slide.header_badge or "") + (slide.caption_line2 or "")
+        if "자취" in title_str or "living" in title_str:
+            palette = {"pill_bg": (0, 102, 255), "accent": (0, 102, 255)}
+            target_tag = "자취 3년차가 직접 꼽은"
+            line1 = "삶의 질 떡상"
+            line2 = "쿠팡 꿀템 TOP 3!"
+        elif "주방" in title_str or "살림" in title_str:
+            palette = {"pill_bg": (230, 65, 30), "accent": (230, 65, 30)}
+            target_tag = "살림 고수들이 숨겨둔"
+            line1 = "주방 살림 혁명"
+            line2 = "쿠팡 필수템 TOP 3!"
+        elif "식비" in title_str or "간편식" in title_str or "food" in title_str:
+            palette = {"pill_bg": (15, 140, 75), "accent": (15, 140, 75)}
+            target_tag = "외식비 30만원 아끼는"
+            line1 = "식비 절약 간편식"
+            line2 = "쿠팡 꿀템 TOP 3!"
+        else:
+            palette = {"pill_bg": (95, 60, 225), "accent": (95, 60, 225)}
+            target_tag = "일잘러들이 몰래 쓰는"
+            line1 = "직장인 데스크테리어"
+            line2 = "쿠팡 꿀템 TOP 3!"
 
-        # 중앙 대형 미스터리 카드
-        target_sz = (960, 820)
-        cx, cy = (self.width - target_sz[0]) // 2, 230
+        # 화면 정중앙 대형 히어로 카드 (y: 440 ~ 1400: 모바일 상단 메뉴 및 하단 UI에 절대 잘리지 않는 황금 안전 구역)
+        card_w, card_h = 980, 960
+        cx = (width - card_w) // 2
+        cy = 440
 
         base_rgba = img.convert("RGBA")
-        shadow = Image.new("RGBA", (self.width, self.height), (0, 0, 0, 0))
+        shadow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         sdraw = ImageDraw.Draw(shadow)
-        sdraw.rounded_rectangle([cx + 10, cy + 20, cx + target_sz[0] - 10, cy + target_sz[1] + 30], radius=40, fill=(0, 0, 0, 45))
+        sdraw.rounded_rectangle([cx + 10, cy + 20, cx + card_w - 10, cy + card_h + 30], radius=44, fill=(0, 0, 0, 45))
         shadow = shadow.filter(ImageFilter.GaussianBlur(35))
         base_rgba = Image.alpha_composite(base_rgba, shadow)
 
-        card = Image.new("RGBA", (target_sz[0], target_sz[1]), (0, 0, 0, 0))
+        card = Image.new("RGBA", (card_w, card_h), (0, 0, 0, 0))
         cdraw = ImageDraw.Draw(card)
-        cdraw.rounded_rectangle([0, 0, target_sz[0], target_sz[1]], radius=38, fill=(255, 255, 255, 250), outline=(225, 232, 245), width=2)
+        cdraw.rounded_rectangle([0, 0, card_w, card_h], radius=42, fill=(255, 255, 255, 252), outline=(220, 228, 242), width=2)
 
-        # 캡슐 뱃지
-        f_sec_badge = self._get_font(34, bold=True)
-        cdraw.rounded_rectangle([target_sz[0] // 2 - 240, 60, target_sz[0] // 2 + 240, 130], radius=18, fill=(240, 244, 255))
-        cdraw.text((target_sz[0] // 2, 77), "🔒 90%가 몰라서 손해 보는 템", font=f_sec_badge, fill=(0, 102, 255), anchor="mt")
+        # 1. 센터 카테고리 / 타깃팅 뱃지
+        f_pill = self._get_font(34, bold=True)
+        bbox = f_pill.getbbox(target_tag)
+        pw = bbox[2] - bbox[0] + 70
+        px = (card_w - pw) // 2
+        py = 50
+        cdraw.rounded_rectangle([px, py, px + pw, py + 68], radius=22, fill=palette["pill_bg"])
+        cdraw.text((card_w // 2, py + 14), target_tag, font=f_pill, fill=(255, 255, 255), anchor="mt")
 
-        f_huge_q = self._get_font(210, bold=True)
-        cdraw.text((target_sz[0] // 2, 190), "?", font=f_huge_q, fill=(0, 102, 255), stroke_width=6, stroke_fill=(210, 230, 255), anchor="mt")
+        # 2. 초대형 볼드 센터 타이틀
+        f_title = self._get_font(74, bold=True)
+        cdraw.text((card_w // 2, 160), line1, font=f_title, fill=(25, 31, 40), anchor="mt")
+        cdraw.text((card_w // 2, 258), line2, font=f_title, fill=palette["accent"], anchor="mt")
 
-        f_secret = self._get_font(52, bold=True)
-        cdraw.text((target_sz[0] // 2, 540), "1번은 진짜 무조건 사세요", font=f_secret, fill=(20, 25, 38), anchor="mt")
-        f_secret_sub = self._get_font(36, bold=True)
-        cdraw.text((target_sz[0] // 2, 630), "돈값 제대로 하는 필수템 공개 🔥", font=f_secret_sub, fill=(95, 110, 135), anchor="mt")
+        # 3. 고전환 트리거 옐로우 배너
+        f_trig = self._get_font(38, bold=True)
+        trig_text = '"1번은 진짜 무조건 사세요!"'
+        tbox = f_trig.getbbox(trig_text)
+        tw = tbox[2] - tbox[0] + 60
+        tx = (card_w - tw) // 2
+        ty = 370
+        cdraw.rounded_rectangle([tx, ty, tx + tw, ty + 70], radius=18, fill=(255, 235, 0), outline=(230, 205, 0), width=2)
+        cdraw.text((card_w // 2, ty + 15), trig_text, font=f_trig, fill=(17, 24, 39), anchor="mt")
+
+        # 4. 실물 3종 미니 쇼케이스
+        f_num = self._get_font(24, bold=True)
+        f_ititle = self._get_font(22, bold=True)
+        f_iprice = self._get_font(24, bold=True)
+
+        slot_w = 280
+        slot_gap = 25
+        start_x = (card_w - (slot_w * 3 + slot_gap * 2)) // 2
+        slot_y = 480
+
+        items_info = slide.preview_items or []
+        for i in range(3):
+            sx = start_x + i * (slot_w + slot_gap)
+            cdraw.rounded_rectangle([sx, slot_y, sx + slot_w, slot_y + 420], radius=24, fill=(245, 248, 253), outline=(225, 232, 242), width=1)
+
+            if i < len(items_info):
+                it = items_info[i]
+                img_path = Path(it.get("image_path", ""))
+                if img_path.exists():
+                    try:
+                        thumb = Image.open(img_path).convert("RGBA")
+                        thumb = ImageOps.fit(thumb, (slot_w - 20, slot_w - 20), method=Image.Resampling.LANCZOS)
+                        tmask = Image.new("L", (slot_w - 20, slot_w - 20), 0)
+                        mdraw = ImageDraw.Draw(tmask)
+                        mdraw.rounded_rectangle([0, 0, slot_w - 20, slot_w - 20], radius=18, fill=255)
+                        card.paste(thumb, (sx + 10, slot_y + 10), mask=tmask)
+                    except Exception:
+                        pass
+
+                # 01/02/03 번호 뱃지
+                cdraw.rounded_rectangle([sx + 16, slot_y + 16, sx + 80, slot_y + 54], radius=10, fill=(0, 115, 233))
+                cdraw.text((sx + 48, slot_y + 22), f"0{i+1}", font=f_num, fill=(255, 255, 255), anchor="mt")
+
+                # 상품 축약명 & 가격
+                title_short = it.get("title", "")
+                if len(title_short) > 11:
+                    title_short = title_short[:10] + "…"
+                cdraw.text((sx + slot_w // 2, slot_y + slot_w + 15), title_short, font=f_ititle, fill=(30, 36, 48), anchor="mt")
+                cdraw.text((sx + slot_w // 2, slot_y + slot_w + 55), it.get("price", ""), font=f_iprice, fill=palette["accent"], anchor="mt")
 
         base_rgba.paste(card, (cx, cy), mask=card)
         img = base_rgba.convert("RGB")
         draw = ImageDraw.Draw(img)
 
-        # 제품 밑: 화이트 글래스 인포 카드
-        self._draw_info_card(
-            img, draw,
-            "미공개",
-            "로켓배송",
-            "★ 4.9",
-            "(실구매 만족도 99%)",
-            ["• 광고 0% 솔직 검증", "• 만족도 3배 상승", "• 가성비 1위 검증"]
-        )
-
-        # 하단 자막
-        cap1 = slide.caption_line1 or "아직도 이거 모르고 산다고?"
-        cap2 = slide.caption_line2 or "놓치면 후회하는 찐 꿀템 TOP 3!"
-        self._draw_viral_subtitle(draw, cap1, cap2)
+        # 상단과 하단 보조 텍스트 (옵션)
+        cap1 = slide.caption_line1 or "놓치면 후회하는 쿠팡 추천템"
+        self._draw_viral_subtitle(draw, cap1, y=1480)
 
         return img
 

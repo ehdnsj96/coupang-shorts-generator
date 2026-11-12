@@ -77,51 +77,6 @@ THEMES: Dict[str, dict] = {
                 voice_script="세 번째는 코멧 모션인식 센서 휴지통입니다. 손만 갖다 대면 알아서 열리고 닫혀서 냄새랑 벌레까지 완벽하게 차단해 줘요.",
                 image_path=str(assets / "real_trashcan.png"),
                 coupang_url="https://link.coupang.com/a/iACmJ9LnZQ"
-            ),
-            ProductItem(
-                item_id="living_drying_rack",
-                title="접이식 원룸 빨래건조대",
-                header_badge="원룸 공간절약템",
-                discount="32% 특가",
-                price="19,800원",
-                tag="로켓배송",
-                card_badge_left="★ 4.9 (후기 5,200개)",
-                card_badge_right="[댓글 01번 링크]",
-                caption1="접으면 두께 5cm로 틈새 쏙!",
-                caption2="원룸 방 좁아질 걱정 제로",
-                voice_script="원룸 공간 확 넓혀주는 접이식 빨래건조대입니다. 빨래 다 널고 접으면 두께가 5센치밖에 안 돼서 문 뒤나 틈새에 쏙 들어가요.",
-                image_path=str(assets / "drying_rack.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%A0%91%EC%9D%B4%EC%8B%9D%20%EC%9B%90%EB%A3%B8%20%EB%B9%A8%EB%9E%98%EA%B1%B4%EC%A1%B0%EB%8C%80&lptag=AF7086198"
-            ),
-            ProductItem(
-                item_id="living_storage_cart",
-                title="슬림 틈새 슬라이딩 수납장",
-                header_badge="틈새 수납 종결자",
-                discount="36% 특가",
-                price="14,900원",
-                tag="무료배송",
-                card_badge_left="★ 4.8 (후기 4,100개)",
-                card_badge_right="[댓글 02번 링크]",
-                caption1="냉장고 옆 틈새 15cm의 기적!",
-                caption2="바퀴 달린 부드러운 수납 카트",
-                voice_script="다음은 슬림 틈새 슬라이딩 수납장입니다. 냉장고 옆이나 세탁기 옆 죽은 틈새 십오 센티미터 공간을 알짜 수납창고로 만들어 줍니다.",
-                image_path=str(assets / "storage_cart.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%8A%AC%EB%A6%BC%20%ED%8B%88%EC%83%88%20%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%94%A9%20%EC%88%98%EB%82%A9%EC%9E%A5&lptag=AF7086198"
-            ),
-            ProductItem(
-                item_id="living_lint_remover",
-                title="충전식 무선 보풀제거기",
-                header_badge="새옷 복구 필수템",
-                discount="42% 특가",
-                price="13,800원",
-                tag="로켓배송",
-                card_badge_left="★ 4.9 (후기 7,300개)",
-                card_badge_right="[댓글 03번 링크]",
-                caption1="낡은 니트·코트 3분 만에 새 옷!",
-                caption2="원단 손상 없는 안전 칼날",
-                voice_script="마지막은 충전식 무선 보풀제거기입니다. 겨울철 니트나 코트에 핀 보풀을 슥슥 문지르기만 하면 방금 산 새 옷처럼 말끔하게 복구돼요.",
-                image_path=str(assets / "lint_remover.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%B6%A9%EC%A0%84%EC%8B%9D%20%EB%AC%B4%EC%84%A0%20%EB%B3%B4%ED%92%80%EC%A0%9C%EA%B1%B0%EA%B8%B0&lptag=AF7086198"
             )
         ]
     },
