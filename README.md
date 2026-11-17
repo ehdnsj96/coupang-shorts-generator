@@ -35,6 +35,17 @@
    - 대사(voice_script), 체크포인트, 뱃지, 태그 자동 생성
    - `custom_products.json`에 저장되어 데일리 러너에 즉시 자동 투입
 
+6. **실행 전 자동 Git 동기화 (`sync_repo`)** — PC 가 실행 직전에 최신 코드를 스스로 받아온다
+   - 데몬은 슬롯 시각이 되면 ① `git fetch` → `git merge --ff-only origin/main` 으로 최신 코드를 당긴 뒤,
+     ② **새 파이썬 프로세스**(`auto_daily.py --now --slot <slot_id> --no-sync`)에서 1회 실행한다
+     → 방금 받은 `product_pool.py`(새 테마·상품)와 모듈이 메모리에 새로 로드된다
+   - 로컬 추적 파일을 직접 고쳐 ff 병합이 막히면 `git reset --hard origin/main` 으로 폴백하되,
+     `.gitignore` 대상인 `daily_state.json` · `output/` · `token.pickle` · `client_secrets.json` 은 지우지 않는다
+     (동기화 후 실제 존재 여부까지 확인). 폴백 직전 로컬 변경분은 `output/git_sync_backup/*.patch` 로 백업
+   - 네트워크·git 오류는 경고 로그만 찍고 **기존 로컬 코드로 계속 실행**한다 (무인 자동화가 멈추지 않음)
+   - `python3 auto_daily.py --now` 도 시작할 때 1회 동기화하고, 코드가 갱신되면 자동으로 새 프로세스로 다시 시작한다
+     (`--no-sync` 로 끌 수 있고, 테스트·오프라인 실행은 `--no-sync` 사용)
+
 4. **모바일 최저가 실시간 검색 & 카테고리 필터 웹페이지**
    - 영상이 발행될 때마다 해당 상품들이 검색 목록에 자동으로 차곡차곡 누적
    - 카테고리 칩: 주방·살림 / 자취·리빙 / 식비·간편식 / 데스크 / 욕실·샤워 / 차량·운전 (새 테마 자동 반영)
@@ -47,7 +58,8 @@
 
 ### 1. 터미널에서 즉시 1개 생성 테스트
 ```bash
-python3 auto_daily.py --now
+python3 auto_daily.py --now               # 시작할 때 최신 코드 동기화 후 실행
+python3 auto_daily.py --now --no-sync     # 동기화 없이 현재 코드로 바로 실행(오프라인·테스트)
 ```
 
 ### 2. 오늘 치 3개 영상 한 번에 연달아 일괄 생성
@@ -59,12 +71,15 @@ python3 auto_daily.py --batch 3
 ```bash
 nohup python3 auto_daily.py --daemon > daily.log 2>&1 &
 ```
+> 데몬은 슬롯마다 원격 `origin/main` 최신 코드를 먼저 받아온 뒤 새 프로세스로 실행합니다.
+> PC 에서는 아무것도 건드리지 않아도 새 테마·새 상품이 다음 슬롯부터 자동 반영됩니다.
 
 ### 4. 업로드·전송 없이 파이프라인만 점검 (테스트)
 ```bash
 python3 auto_daily.py --dry-run --force   # 생성만, 유튜브 업로드·도감 푸시 없음
+python3 auto_daily.py --now --slot 2026-11-17_08 --no-sync   # 데몬이 하위 프로세스로 부르는 형태
 python3 tests/test_guard.py               # 중복 가드·사전 검증·도감 정합성 테스트
-python3 tests/test_auto_daily.py          # 파이프라인 배선(가드→검증→기록) 테스트
+python3 tests/test_auto_daily.py          # 파이프라인 배선 + 실행 전 Git 동기화(sync_repo)·--no-sync 테스트
 ```
 
 ---
@@ -98,7 +113,7 @@ python3 product_collector.py --list
 
 ## 📁 주요 디렉터리 및 파일 구조
 
-- `auto_daily.py`: 하루 3회 무인 자동화 러너 (슬롯 관리, 유튜브 업로드, 웹페이지 갱신)
+- `auto_daily.py`: 하루 3회 무인 자동화 러너 (슬롯 관리, 실행 전 Git 동기화, 유튜브 업로드, 웹페이지 갱신)
 - `publish_guard.py`: 삼중 중복 업로드 가드 (로컬 상태 · 원격 도감 · 유튜브 RSS)
 - `preflight.py`: 업로드 전 무결성 사전 검증 (이미지 존재 · 검색 URL 차단 · /vp/products 상품 URL · lptag · 1:1 매칭)
 - `tests/`: 중복 가드·사전 검증 로컬 테스트

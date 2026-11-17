@@ -11,6 +11,12 @@ temp_*
 # 실행 상태 파일 (git pull 시 원격 파일과 충돌/덮어쓰기 방지)
 daily_state.json
 
+# 인증·시크릿 (자동 동기화/커밋 대상에서 제외 — reset --hard 로도 지워지지 않는다)
+token.pickle
+client_secrets.json
+client_secret*.json
+.env
+
 # Sub-repo git dir
 web/.git/
 
