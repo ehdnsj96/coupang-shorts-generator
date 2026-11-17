@@ -148,6 +148,32 @@ check(web_updater.theme_key_for_item("bath_slippers") == "bath", "새 테마 카
 html = web_updater.generate_html("테스트", [], clean)
 check("욕실·샤워" in html and "차량·운전" in html, "도감 HTML 에 새 카테고리 필터가 생성됨")
 
+case("9. 훅 슬라이드 문구가 테마와 일치 (렌더러 하드코딩 회귀 방지)")
+from slide_renderer import SlideRenderer
+from models import Slide
+
+renderer2 = SlideRenderer()
+bath_slides = episode_builder.build_episode("bath", 1, THEMES["bath"]["products"]).slides
+style_bath = renderer2._hook_style(bath_slides[0])
+check("욕실" in style_bath["line1"], f"욕실 테마 훅 문구: {style_bath['line1']} / {style_bath['tag']}")
+check("데스크" not in style_bath["line1"], "데스크 문구가 욕실 훅에 섞이지 않음")
+
+unknown = Slide(
+    step_name="HOOK",
+    header_badge="🔥 반려동물 꿀템",
+    main_title="냥집사 필수템\n쿠팡 꿀템 TOP 3!",
+    caption_line1="고양이가 좋아해요",
+)
+style_unknown = renderer2._hook_style(unknown)
+check(style_unknown["line1"] == "냥집사 필수템", f"미등록 테마는 슬라이드 문구를 그대로 사용 ({style_unknown['line1']})")
+check("데스크" not in style_unknown["tag"], f"미등록 테마도 데스크 문구로 대체되지 않음 ({style_unknown['tag']})")
+
+case("10. 평점·후기 표기 (임의 4.8 고정 회귀 방지)")
+star, rev = renderer2._split_rating("★ 5.0 (후기 2만+)")
+check(star == "★ 5.0" and rev == "(후기 2만+)", f"상품 평점이 그대로 쓰임 ({star} {rev})")
+star2, rev2 = renderer2._split_rating("(후기 5만+)")
+check(star2 == "" and rev2 == "(후기 5만+)", "별점이 없으면 빈 별점 (가짜 4.8 생성 없음)")
+
 print("\n" + "=" * 60)
 if failures:
     print(f"실패 {len(failures)}건:")

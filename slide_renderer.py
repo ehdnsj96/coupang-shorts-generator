@@ -80,33 +80,62 @@ class SlideRenderer:
 
         img.save(str(output_path), format="PNG")
 
+    # 테마별 훅 스타일 (문구·컬러). 순서 중요: 위에서부터 먼저 매칭된다.
+    HOOK_STYLES = [
+        (("자취", "living"), {"palette": (0, 102, 255), "tag": "자취 3년차가 직접 꼽은", "line1": "삶의 질 떡상", "line2": "쿠팡 꿀템 TOP 3!"}),
+        (("주방", "살림"), {"palette": (230, 65, 30), "tag": "살림 고수들이 숨겨둔", "line1": "주방 살림 혁명", "line2": "쿠팡 필수템 TOP 3!"}),
+        (("식비", "간편식", "food"), {"palette": (15, 140, 75), "tag": "외식비 30만원 아끼는", "line1": "식비 절약 간편식", "line2": "쿠팡 꿀템 TOP 3!"}),
+        (("데스크",), {"palette": (95, 60, 225), "tag": "일잘러들이 몰래 쓰는", "line1": "직장인 데스크테리어", "line2": "쿠팡 꿀템 TOP 3!"}),
+        (("욕실", "샤워"), {"palette": (0, 150, 136), "tag": "샤워만 해도 리셋되는", "line1": "욕실·샤워 꿀템", "line2": "쿠팡 필수템 TOP 3!"}),
+        (("차 안", "차량", "운전"), {"palette": (33, 64, 95), "tag": "세차장 안 가도 되는", "line1": "차 안 리셋 꿀템", "line2": "쿠팡 꿀템 TOP 3!"}),
+    ]
+
+    def _split_rating(self, text: str):
+        """'★ 5.0 (후기 2만+)' → ('★ 5.0', '(후기 2만+)'). 없으면 그대로 돌려준다."""
+        text = (text or "").strip()
+        m = re.search(r"[★☆]\s*\d+(?:\.\d+)?", text)
+        if not m:
+            return "", text
+        star = m.group(0)
+        return star, text.replace(star, "", 1).strip()
+
+    def _hook_style(self, slide: Slide) -> dict:
+        """훅 슬라이드 문구·컬러를 테마에 맞춰 정한다.
+
+        등록되지 않은 새 테마는 데스크 문구로 대체되지 않고,
+        에피소드에 실제로 담긴 훅 문구(theme_info)를 그대로 사용한다.
+        """
+        probe = " ".join(filter(None, [
+            slide.main_title or "",
+            slide.header_badge or "",
+            slide.caption_line1 or "",
+            slide.caption_line2 or "",
+        ]))
+        for keywords, style in self.HOOK_STYLES:
+            if any(k in probe for k in keywords):
+                return dict(style)
+
+        lines = [l.strip() for l in (slide.main_title or "").split("\n") if l.strip()]
+        tag = re.sub(r"[🔥📌]", "", slide.header_badge or "").strip()
+        tag = re.sub(r"\s*\d+탄$", "", tag).strip()
+        return {
+            "palette": (60, 72, 95),
+            "tag": tag or "쿠팡 추천 꿀템",
+            "line1": lines[0] if lines else "쿠팡 꿀템 TOP 3!",
+            "line2": lines[1] if len(lines) > 1 else "",
+        }
+
     def _render_hook_slide(self, slide: Slide) -> Image.Image:
         """센터 집중형 바이럴 훅: 모바일 상하단 잘림 0% · 카테고리 타깃 뱃지 + 초대형 볼드 타이틀 + 실물 3종 프리뷰"""
         img = self._draw_background()
         width, height = self.width, self.height
 
         # 테마 판별 및 컬러 팔레트
-        title_str = (slide.main_title or "") + (slide.header_badge or "") + (slide.caption_line2 or "")
-        if "자취" in title_str or "living" in title_str:
-            palette = {"pill_bg": (0, 102, 255), "accent": (0, 102, 255)}
-            target_tag = "자취 3년차가 직접 꼽은"
-            line1 = "삶의 질 떡상"
-            line2 = "쿠팡 꿀템 TOP 3!"
-        elif "주방" in title_str or "살림" in title_str:
-            palette = {"pill_bg": (230, 65, 30), "accent": (230, 65, 30)}
-            target_tag = "살림 고수들이 숨겨둔"
-            line1 = "주방 살림 혁명"
-            line2 = "쿠팡 필수템 TOP 3!"
-        elif "식비" in title_str or "간편식" in title_str or "food" in title_str:
-            palette = {"pill_bg": (15, 140, 75), "accent": (15, 140, 75)}
-            target_tag = "외식비 30만원 아끼는"
-            line1 = "식비 절약 간편식"
-            line2 = "쿠팡 꿀템 TOP 3!"
-        else:
-            palette = {"pill_bg": (95, 60, 225), "accent": (95, 60, 225)}
-            target_tag = "일잘러들이 몰래 쓰는"
-            line1 = "직장인 데스크테리어"
-            line2 = "쿠팡 꿀템 TOP 3!"
+        style = self._hook_style(slide)
+        palette = {"pill_bg": style["palette"], "accent": style["palette"]}
+        target_tag = style["tag"]
+        line1 = style["line1"]
+        line2 = style["line2"]
 
         # 화면 정중앙 대형 히어로 카드 (y: 440 ~ 1400: 모바일 상단 메뉴 및 하단 UI에 절대 잘리지 않는 황금 안전 구역)
         card_w, card_h = 980, 960
@@ -245,15 +274,16 @@ class SlideRenderer:
         img = base_rgba.convert("RGB")
         draw = ImageDraw.Draw(img)
 
-        # 제품 밑: 화이트 글래스 인포 카드
-        price_clean = (slide.price_badge or "27,990원").replace("원", "").strip()
+        # 제품 밑: 화이트 글래스 인포 카드 (평점·후기 수는 상품 데이터에서 그대로 가져온다)
+        price_clean = (slide.price_badge or "").replace("원", "").strip()
         points = self._get_item_points(slide.main_title)
+        rating_star, review_text = self._split_rating(slide.card_badge_left or "")
         self._draw_info_card(
             img, draw,
             price_clean,
             slide.tag_badge or "로켓배송",
-            "★ 4.8",
-            slide.card_badge_left or "(후기 4만+)",
+            rating_star,
+            review_text,
             points
         )
 
@@ -322,13 +352,13 @@ class SlideRenderer:
         img = base_rgba.convert("RGB")
         draw = ImageDraw.Draw(img)
 
-        # 제품 밑: 화이트 글래스 인포 카드
+        # 제품 밑: 화이트 글래스 인포 카드 (인증 문구 대신 사실 범위 안내)
         self._draw_info_card(
             img, draw,
             "최저가",
             "로켓배송",
-            "100%",
-            "(공식 정품 인증)",
+            "",
+            "(가격은 실시간 변동)",
             ["• 프로필 상단 링크", "• 01~03번 실시간 연동", "• 로켓배송 최저가 직행"]
         )
 
@@ -359,9 +389,10 @@ class SlideRenderer:
         bbox = draw.textbbox((0, 0), price_clean, font=f_p_num)
         w_num = bbox[2] - bbox[0]
 
-        draw.text((card_x + 45, card_y + 35), price_clean, font=f_p_num, fill=(20, 25, 38))
-        if price_clean != "미공개" and price_clean != "최저가":
-            draw.text((card_x + 45 + w_num + 12, card_y + 51), "원", font=f_p_unit, fill=(0, 102, 255))
+        if price_clean:
+            draw.text((card_x + 45, card_y + 35), price_clean, font=f_p_num, fill=(20, 25, 38))
+            if price_clean not in ("미공개", "최저가"):
+                draw.text((card_x + 45 + w_num + 12, card_y + 51), "원", font=f_p_unit, fill=(0, 102, 255))
 
         # 로켓배송 뱃지
         f_rk = self._get_font(26, bold=True)
@@ -370,9 +401,10 @@ class SlideRenderer:
 
         # 평점 & 리뷰 (중복 별점 완벽 제거 및 정돈)
         f_star = self._get_font(28, bold=True)
-        clean_rev = re.sub(r"[★☆]\s*\d+\.\d+", "", review_text).strip()
-        formatted_rating = f"{star}  {clean_rev}" if clean_rev else star
-        draw.text((card_x + 45, card_y + 190), formatted_rating, font=f_star, fill=(90, 105, 130))
+        clean_rev = re.sub(r"[★☆]\s*\d+(?:\.\d+)?", "", review_text or "").strip()
+        formatted_rating = "  ".join(p for p in [star, clean_rev] if p).strip()
+        if formatted_rating:
+            draw.text((card_x + 45, card_y + 190), formatted_rating, font=f_star, fill=(90, 105, 130))
 
         # 버티컬 구분선
         draw.line([(card_x + 360, card_y + 35), (card_x + 360, card_y + card_h - 35)], fill=(225, 230, 242), width=2)
@@ -406,5 +438,17 @@ class SlideRenderer:
             return ["• 한 끼 2천 원대 갓성비", "• 6종 골라먹는 재미", "• 프라이팬 3분 뚝딱"]
         elif "그릭요거트" in title:
             return ["• 크림치즈급 꾸덕한 질감", "• 단백질 풍부 무가당", "• 아침 식사대용 꿀조합"]
+        elif "마이크로 필터" in title or "헤드 퓨어" in title:
+            return ["• 3개입 리필 구성", "• 미세 이물질 1차 여과", "• 2~3개월마다 교체"]
+        elif "샤워기" in title:
+            return ["• 수압 상승 + 미세 필터", "• 필터 2개입 기본 포함", "• 손으로 바로 교체"]
+        elif "욕실화" in title:
+            return ["• 미끄럼 방지 논슬립", "• 물빠짐 구멍 설계", "• 가볍고 부드러운 소재"]
+        elif "디퓨저" in title:
+            return ["• 50ml 2개입 구성", "• 우드볼 스틱 디퓨저", "• 차량·실내 공용"]
+        elif "카워시" in title or "워터리스" in title:
+            return ["• 물 없이 바로 세차", "• 750ml 스프레이 타입", "• 오염 제거 + 광택"]
+        elif "물왁스" in title:
+            return ["• 물 묻은 차에 바로 사용", "• 600ml 스프레이 타입", "• 광택·발수 케어"]
         else:
             return ["• 광고 0% 솔직 검증", "• 실사용 만족도 최상", "• 로켓배송 최저가"]
