@@ -1,6 +1,6 @@
 # 🧪 돈값연구소 (@dongap_lab) - 쿠팡 파트너스 유튜브 쇼츠 완전 무인 자동화 파이프라인
 
-"이건 진짜 돈값 한다!" 싶은 알짜배기 쿠팡 꿀템을 **하루 3회(08시·12시·18시) 자동으로 영상화하고, 모바일 최저가 검색 페이지와 텔레그램 채널까지 100% 무인 연동**하는 올인원 시스템입니다.
+"이건 진짜 돈값 한다!" 싶은 알짜배기 쿠팡 꿀템을 **하루 3회(08시·12시·18시) 자동으로 영상화하고, 모바일 누적 도감(GitHub Pages)과 유튜브 채널까지 100% 무인 연동**하는 올인원 시스템입니다.
 
 ---
 
@@ -15,7 +15,7 @@
 2. **하루 3회 골든 타임 슬롯 자동 데몬 (`auto_daily.py --daemon`)**
    - 08:00 (출근길 피크), 12:00 (점심시간 피크), 18:00 (퇴근·저녁 피크) 자동 순환
    - 테마 자동 전환: 자취·리빙 ➔ 주방·살림 ➔ 식비·간편식 ➔ 데스크테리어 ➔ 욕실·샤워 ➔ 차 안 리셋 (테마당 실물 상품 3종)
-   - 영상 렌더링 즉시 **모바일 누적 검색 도감 갱신(GitHub Pages)** 및 **텔레그램 채널(@ym_hotdeal) 자동 전송**
+   - 유튜브 업로드가 끝난 회차만 **모바일 누적 도감(GitHub Pages)** 에 1:1 상품 링크로 갱신
 
 3. **삼중 중복 업로드 가드 (`publish_guard.py`)** — 같은 영상을 두 번 올리지 않는다
    - 1단계 로컬: `daily_state.json` 의 `used_items_by_theme` / `published_titles`
@@ -62,7 +62,7 @@ nohup python3 auto_daily.py --daemon > daily.log 2>&1 &
 
 ### 4. 업로드·전송 없이 파이프라인만 점검 (테스트)
 ```bash
-python3 auto_daily.py --dry-run --force   # 생성만, 유튜브 업로드·텔레그램·도감 푸시 없음
+python3 auto_daily.py --dry-run --force   # 생성만, 유튜브 업로드·도감 푸시 없음
 python3 tests/test_guard.py               # 중복 가드·사전 검증·도감 정합성 테스트
 python3 tests/test_auto_daily.py          # 파이프라인 배선(가드→검증→기록) 테스트
 ```
@@ -98,9 +98,9 @@ python3 product_collector.py --list
 
 ## 📁 주요 디렉터리 및 파일 구조
 
-- `auto_daily.py`: 하루 3회 무인 자동화 러너 (슬롯 관리, 웹페이지 갱신, 텔레그램 배달)
+- `auto_daily.py`: 하루 3회 무인 자동화 러너 (슬롯 관리, 유튜브 업로드, 웹페이지 갱신)
 - `publish_guard.py`: 삼중 중복 업로드 가드 (로컬 상태 · 원격 도감 · 유튜브 RSS)
-- `preflight.py`: 업로드 전 무결성 사전 검증 (이미지 존재 · lptag · 1:1 매칭)
+- `preflight.py`: 업로드 전 무결성 사전 검증 (이미지 존재 · 검색 URL 차단 · /vp/products 상품 URL · lptag · 1:1 매칭)
 - `tests/`: 중복 가드·사전 검증 로컬 테스트
 - `product_collector.py`: 신규 쿠팡 상품 자동 수집 및 이미지 다운로더
 - `product_pool.py`: 테마별 상품 풀 및 custom_products 자동 병합 엔진
