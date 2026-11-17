@@ -107,7 +107,7 @@ THEMES: Dict[str, dict] = {
             ),
             ProductItem(
                 item_id="kitchen_drain",
-                title="코멧 홈 냄새차단 실리콘 배수구 커버 20 x 20 cm",
+                title="코멧 홈 냄새차단 실리콘 배수구 커버",
                 header_badge="실리콘 배수구 거름망",
                 discount="2개입 특가",
                 price="3,800원",
@@ -319,7 +319,7 @@ THEMES: Dict[str, dict] = {
         "products": [
             ProductItem(
                 item_id="car_diffuser",
-                title="코코도르 우드볼 차량용 디퓨저 50ml 2개입 우디호텔",
+                title="코코도르 우드볼 차량용 디퓨저 50ml 2개입",
                 header_badge="우드볼 차량 디퓨저",
                 discount="53% 할인",
                 price="7,900원",
