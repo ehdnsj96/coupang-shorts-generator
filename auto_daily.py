@@ -1,4 +1,5 @@
 import argparse
+import copy
 import json
 import os
 import sys
@@ -151,6 +152,7 @@ def run_daily_job(
         print(f"   · {warning}")
 
     # 다음 순번 에피소드 자동 선택 (테마 및 상품 자동 회전, 사용 상품 재사용 금지)
+    state_before_select = copy.deepcopy(state)
     selected_script, state = get_next_dynamic_episode(
         state,
         blocked_item_ids=guard["blocked_item_ids"],
@@ -168,8 +170,8 @@ def run_daily_job(
     preflight_ok, problems = check_episode(selected_script)
     if not preflight_ok:
         print(format_problems(problems))
-        print("   → 상태를 저장하지 않고 종료합니다(상품 소모 없음).")
-        save_state(state)
+        print("   → 상태를 선택 전으로 되돌리고 종료합니다(상품 소모 없음).")
+        save_state(state_before_select)
         return None
     print("✅ 사전 검증 통과: 상품 이미지 3종 존재 · 쿠팡 링크 lptag · 1:1 매칭 정상")
 

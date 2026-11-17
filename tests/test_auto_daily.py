@@ -108,6 +108,21 @@ result2 = auto_daily.run_daily_job(slot_id="test_dryrun_02", force=True, send_te
 check(result2 is None, "새 상품이 없으면 None 반환 (생성·업로드 skip)")
 check(calls["upload"] == 0 and calls["telegram"] == 0, "skip 시에도 업로드·전송 없음")
 
+print("\n=== C. 사전 검증 실패 시 상품 소모 없음 ===")
+seed2 = {"completed_slots": [], "history": []}
+seed2 = publish_guard.reconcile_state_with_archive(seed2, archive_items)
+tmp_state.write_text(json.dumps(seed2, ensure_ascii=False), encoding="utf-8")
+
+original_check = auto_daily.check_episode
+auto_daily.check_episode = lambda script: (False, ["forced preflight failure"])
+result3 = auto_daily.run_daily_job(slot_id="test_dryrun_03", force=True, send_telegram=False, dry_run=True)
+auto_daily.check_episode = original_check
+state3 = json.loads(tmp_state.read_text(encoding="utf-8"))
+
+check(result3 is None, "사전 검증 실패 시 None 반환 (차단)")
+check(state3.get("used_items_by_theme", {}).get("bath", []) == [], "실패 시 욕실 상품이 소모되지 않음(상태 롤백)")
+check("test_dryrun_03" not in state3.get("completed_slots", []), "슬롯이 완료 처리되지 않음")
+
 print("\n" + "=" * 60)
 if failures:
     print(f"실패 {len(failures)}건:")
