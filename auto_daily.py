@@ -258,7 +258,7 @@ def describe_sync(result: dict) -> str:
                 lines.append(f"   · {name}")
             if len(files) > 8:
                 lines.append(f"   · … 외 {len(files) - 8}건")
-        if result.get("message"):
+        if result.get("message") and not result["message"].startswith(short(result.get("before"))):
             lines.append(f"   · {result['message']}")
     elif status == "up_to_date":
         lines = [f"✅ 실행 전 코드 동기화: 이미 최신 코드입니다 ({short(result.get('after') or result.get('before'))})"]
