@@ -363,6 +363,120 @@ THEMES: Dict[str, dict] = {
                 coupang_url="https://www.coupang.com/vp/products/209472308?itemId=21352632856&vendorItemId=89833893802&lptag=AF7086198"
             )
         ]
+    },
+
+    "cleaning": {
+        "theme_name": "청소 끝판왕",
+        "hook_title": "청소 30분을 10분으로\n청소 꿀템 TOP 3!",
+        "hook_voice": "청소할 때 아직도 허리 숙여서 걸레질하시나요? 밀대 하나로 바닥부터 먼지까지 끝내는, 쿠팡 청소 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "청소하다 허리 아프셨죠?",
+        "hook_caption2": "집안일 절반 줄여주는 청소 꿀템 3가지!",
+        "hook_image": str(assets / "cleaning_mop.png"),
+        "hashtags": ["#청소꿀템", "#청소용품", "#자취청소", "#쿠팡추천", "#살림꿀템"],
+        "products": [
+            ProductItem(
+                item_id="cleaning_mop",
+                title="코멧 스프레이 밀대걸레 + 극세사 패드 5개 + 다용도 클리너 1개",
+                header_badge="코멧 스프레이 밀대걸레",
+                discount="67% 할인",
+                price="10,310원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 41,964)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="물통 없이 분사하며 한 번에!",
+                caption2="극세사 패드 5장 + 클리너 포함",
+                voice_script="첫 번째는 코멧 스프레이 밀대걸레입니다. 손잡이를 당기면 물이 슥 나와서 물통 들고 다닐 필요 없이 바닥을 한 번에 닦을 수 있어요.",
+                image_path=str(assets / "cleaning_mop.png"),
+                coupang_url="https://www.coupang.com/vp/products/6113657232?itemId=11538728285&vendorItemId=78813769516&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="cleaning_magicblock",
+                title="코멧 매직블럭 중형 100개 + 집게핀 1개, 1세트",
+                header_badge="코멧 매직블럭 100개입",
+                discount="56% 할인",
+                price="5,980원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 6,817)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="찌든 때는 물만 묻혀 쓱쓱!",
+                caption2="100개 들이라 1년 내내 넉넉",
+                voice_script="두 번째는 코멧 매직블럭 백 개 들이입니다. 물만 묻혀서 문틈이나 싱크대 찌든 때를 문지르면 새것처럼 지워져요.",
+                image_path=str(assets / "cleaning_magicblock.png"),
+                coupang_url="https://www.coupang.com/vp/products/7790158804?itemId=3987560154&vendorItemId=71971864635&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="cleaning_duster",
+                title="코멧 홈 길이조절 롱 먼지털이개, 혼합색상, 1개",
+                header_badge="길이조절 롱 먼지털이개",
+                discount="43% 할인",
+                price="5,110원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 4,732)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="천장·몰딩 먼지까지 손 닿게!",
+                caption2="길이조절 + 구부러지는 헤드",
+                voice_script="세 번째는 길이조절 롱 먼지털이개입니다. 길게 늘려서 천장 몰딩이나 에어컨 위 먼지를 안전하게 털어낼 수 있어요.",
+                image_path=str(assets / "cleaning_duster.png"),
+                coupang_url="https://www.coupang.com/vp/products/6994008705?itemId=17126820181&vendorItemId=84300028449&lptag=AF7086198"
+            )
+        ]
+    },
+
+    "winter": {
+        "theme_name": "한파 방한 필수템",
+        "hook_title": "출근길 한파 막아주는\n겨울 방한 꿀템 TOP 3!",
+        "hook_voice": "아침 출근길 칼바람에 손 시리고 목 시리셨죠? 손과 목, 손끝까지 따뜻하게 막아주는 쿠팡 방한 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "출근길 칼바람, 그냥 나가셨죠?",
+        "hook_caption2": "손·목·손끝 완벽 방한 꿀템 3가지!",
+        "hook_image": str(assets / "winter_handwarmer.png"),
+        "hashtags": ["#겨울필수템", "#방한용품", "#손난로", "#넥워머", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="winter_handwarmer",
+                title="티엘팩토리 충전식 손난로 보조배터리 5000mAh, 플랫블랙",
+                header_badge="충전식 손난로 보조배터리",
+                discount="54% 할인",
+                price="11,200원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 5,347)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="전원만 켜면 금방 따뜻!",
+                caption2="핸드폰 충전까지 되는 1석 2조",
+                voice_script="첫 번째는 티엘팩토리 충전식 손난로입니다. 전원만 켜면 금방 따뜻해지고 핸드폰 충전까지 되는 보조배터리라 겨울 내내 들고 다니게 돼요.",
+                image_path=str(assets / "winter_handwarmer.png"),
+                coupang_url="https://www.coupang.com/vp/products/6130716221?itemId=11689247307&vendorItemId=87188180201&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="winter_neckwarmer",
+                title="캐럿 이지 넥워머, 블랙, Free",
+                header_badge="캐럿 이지 넥워머",
+                discount="54% 할인",
+                price="5,000원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 5,197)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="목만 감싸도 체감 온도 쑥!",
+                caption2="목도리보다 편한 보들 기모",
+                voice_script="두 번째는 캐럿 이지 넥워머입니다. 목만 감싸도 온몸이 따뜻해지고, 목도리처럼 풀리거나 흘러내릴 일이 없어서 출근길에 딱이에요.",
+                image_path=str(assets / "winter_neckwarmer.png"),
+                coupang_url="https://www.coupang.com/vp/products/2145302183?itemId=3642726396&vendorItemId=71628248629&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="winter_gloves",
+                title="이츠굿텐 보온 플러스 기모 방한 장갑, Black, M",
+                header_badge="기모 스마트터치 장갑",
+                discount="65% 할인",
+                price="4,490원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 7,102)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="장갑 끼고도 폰 터치 쏙!",
+                caption2="안감 기모라 손끝까지 따뜻",
+                voice_script="세 번째는 이츠굿텐 기모 방한 장갑입니다. 안쪽이 기모라 손끝까지 따뜻하고, 장갑을 낀 채로 스마트폰 터치가 돼서 겨울에도 편해요.",
+                image_path=str(assets / "winter_gloves.png"),
+                coupang_url="https://www.coupang.com/vp/products/9247026267?itemId=20571923542&vendorItemId=87647349184&lptag=AF7086198"
+            )
+        ]
     }
 }
 

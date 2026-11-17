@@ -110,6 +110,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         "desk": ("데스크테리어", "💻"),
         "bath": ("욕실·샤워", "🛁"),
         "car": ("차량·운전", "🚗"),
+        "cleaning": ("청소·수납", "🧹"),
+        "winter": ("겨울·방한", "🧣"),
     }
 
     # 동영상 테마별 그룹 빌드 (카테고리가 늘어나면 이 목록만 확장하면 된다)
@@ -120,6 +122,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         ("desk", "💻 데스크", "💻 직장인 데스크테리어 TOP 3"),
         ("bath", "🛁 욕실·샤워", "🛁 욕실·샤워 리셋 TOP 3"),
         ("car", "🚗 차량·운전", "🚗 차 안 리셋 꿀템 TOP 3"),
+        ("cleaning", "🧹 청소·수납", "🧹 청소 끝판왕 TOP 3"),
+        ("winter", "🧣 겨울·방한", "🧣 한파 방한 필수템 TOP 3"),
     ]
 
     section_blocks = []
@@ -614,6 +618,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         <button class="pill-btn" data-filter="desk">💻 데스크</button>
         <button class="pill-btn" data-filter="bath">🛁 욕실·샤워</button>
         <button class="pill-btn" data-filter="car">🚗 차량·운전</button>
+        <button class="pill-btn" data-filter="cleaning">🧹 청소·수납</button>
+        <button class="pill-btn" data-filter="winter">🧣 겨울·방한</button>
       </div>
     </div>
 

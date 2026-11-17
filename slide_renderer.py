@@ -48,6 +48,26 @@ class SlideRenderer:
 
         return Image.alpha_composite(bg, overlay).convert("RGB")
 
+    def _fit_title(self, draw: ImageDraw.ImageDraw, title_text: str, max_width: int, base: int = 54, minimum: int = 30):
+        """제목이 화면 폭을 넘지 않도록 줄별로 폰트 크기를 줄이고, 최소 크기에서도 넘치면 말줄임한다."""
+        lines = title_text.split("\n")
+        size = base
+        while size > minimum:
+            font = self._get_font(size, bold=True)
+            if all(draw.textlength(line, font=font) <= max_width for line in lines):
+                return "\n".join(lines), font
+            size -= 2
+
+        font = self._get_font(minimum, bold=True)
+        fitted = []
+        for line in lines:
+            while line and draw.textlength(line, font=font) > max_width:
+                line = line[:-1]
+            if line != lines[len(fitted)]:
+                line = line.rstrip() + "…"
+            fitted.append(line)
+        return "\n".join(fitted), font
+
     def _draw_top_header(self, draw: ImageDraw.ImageDraw, tag_text: str, title_text: str):
         """돈값연구소 상단 브랜딩 & 메인 타이틀"""
         f_badge = self._get_font(26, bold=True)
@@ -57,8 +77,9 @@ class SlideRenderer:
         f_rank = self._get_font(28, bold=True)
         draw.text((self.width - 60, 72), tag_text, font=f_rank, fill=(0, 102, 255), anchor="ra")
 
-        f_title = self._get_font(54, bold=True)
-        draw.text((60, 135), title_text, font=f_title, fill=(18, 24, 38))
+        # 긴 상품명도 잘리지 않게 폭에 맞춰 자동 축소
+        fitted_title, f_title = self._fit_title(draw, title_text, self.width - 120)
+        draw.multiline_text((60, 135), fitted_title, font=f_title, fill=(18, 24, 38), spacing=8)
 
     def _draw_viral_subtitle(self, draw: ImageDraw.ImageDraw, line1: str, line2: Optional[str] = None, y: int = 1500):
         """중앙 정렬 방송용 볼드 외곽선 자막"""
@@ -88,6 +109,8 @@ class SlideRenderer:
         (("데스크",), {"palette": (95, 60, 225), "tag": "일잘러들이 몰래 쓰는", "line1": "직장인 데스크테리어", "line2": "쿠팡 꿀템 TOP 3!"}),
         (("욕실", "샤워"), {"palette": (0, 150, 136), "tag": "샤워만 해도 리셋되는", "line1": "욕실·샤워 꿀템", "line2": "쿠팡 필수템 TOP 3!"}),
         (("차 안", "차량", "운전"), {"palette": (33, 64, 95), "tag": "세차장 안 가도 되는", "line1": "차 안 리셋 꿀템", "line2": "쿠팡 꿀템 TOP 3!"}),
+        (("청소", "수납"), {"palette": (0, 168, 205), "tag": "청소 고수들이 쓰는", "line1": "청소 끝판왕 꿀템", "line2": "쿠팡 필수템 TOP 3!"}),
+        (("방한", "겨울", "한파"), {"palette": (200, 62, 70), "tag": "출근길 한파엔 이거", "line1": "겨울 방한 꿀템", "line2": "쿠팡 필수템 TOP 3!"}),
     ]
 
     def _split_rating(self, text: str):

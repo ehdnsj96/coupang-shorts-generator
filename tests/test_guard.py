@@ -106,16 +106,33 @@ check(ok2, f"차량 회차 사전 검증 통과 {problems2 if problems2 else ''}
 # ------------------------------------------- 6. 모든 상품 소진 시 None 반환
 case("6. 모든 테마 소진 시 None (기존 무한 중복 버그 회귀 테스트)")
 state_exhausted = copy.deepcopy(state_after)
+remaining_scripts = []
 script3, state_exhausted = episode_builder.get_next_dynamic_episode(
     state_exhausted,
     blocked_item_ids=set(),
     published_titles=set(),
 )
+while script3 is not None:
+    remaining_scripts.append(script3)
+    script3, state_exhausted = episode_builder.get_next_dynamic_episode(
+        state_exhausted,
+        blocked_item_ids=set(),
+        published_titles=set(),
+    )
 check(script3 is None, "미사용 상품이 없으면 None 을 반환 (used 리셋 후 재업로드하지 않음)")
+check(
+    [s.topic.split()[0] for s in remaining_scripts] == ["청소", "한파"],
+    f"남은 테마가 차례로 소진됨 ({[s.topic for s in remaining_scripts]})",
+)
+total_pool = sum(len(t["products"]) for t in THEMES.values())
 total_used = set()
 for ids in state_exhausted["used_items_by_theme"].values():
     total_used.update(ids)
-check(len(total_used) == 18, f"18종 전부 사용 처리됨 (실제 {len(total_used)})")
+check(len(total_used) == total_pool, f"{total_pool}종 전부 사용 처리됨 (실제 {len(total_used)})")
+check(
+    len(total_used) == len({p.item_id for t in THEMES.values() for p in t["products"]}),
+    "item_id 중복 없이 전 상품이 소진됨",
+)
 
 # ------------------------------------------------- 7. 사전 검증 실패 시 차단
 case("7. 사전 검증 실패 케이스 차단")
@@ -157,14 +174,14 @@ check(preflight.check_coupang_url(valid_short) == [], "파트너스 단축 링�
 check(preflight.check_coupang_url("https://www.coupang.com/vp/products/6317163928?lptag=AF7086198") != [], "itemId 없는 /vp/products URL 은 실패")
 check(preflight.check_coupang_url("https://www.coupang.com/vp/products/6317163928?itemId=784715207") != [], "lptag 없는 상품 URL 은 실패")
 
-case("7-2. 상품 풀 18종 전수 검사 — 검색 URL 0건 · 실제 상품 URL 18건")
+case(f"7-2. 상품 풀 {sum(len(t['products']) for t in THEMES.values())}종 전수 검사 — 검색 URL 0건 · 실제 상품 URL 전건")
 offenders = []
 for theme_key, theme in THEMES.items():
     for prod in theme["products"]:
         probs = preflight.check_coupang_url(prod.coupang_url)
         if probs:
             offenders.append((theme_key, prod.item_id, probs))
-check(not offenders, f"18종 모두 실제 상품 상세 URL (위반 {offenders if offenders else '없음'})")
+check(not offenders, f"{sum(len(t['products']) for t in THEMES.values())}종 모두 실제 상품 상세 URL (위반 {offenders if offenders else '없음'})")
 check(
     not any("/np/search" in p.coupang_url for t in THEMES.values() for p in t["products"]),
     "검색 URL(np/search) 잔존 0건",
