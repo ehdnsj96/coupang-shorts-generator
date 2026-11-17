@@ -635,16 +635,9 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
 
     <!-- 채널 링크 -->
     <div class="section-label" style="margin-top: 30px;">
-      실시간 핫딜 &amp; 채널
+      공식 채널
     </div>
     <div class="extra-links">
-      <a class="channel-btn" href="https://t.me/ym_hotdeal" target="_blank" rel="noopener noreferrer">
-        <div class="channel-left">
-          <span class="channel-icon">🚀</span>
-          <span>실시간 쿠팡 핫딜 모음 (텔레그램)</span>
-        </div>
-        <span class="channel-arrow">➔</span>
-      </a>
       <a class="channel-btn" href="https://youtube.com/@dongap_lab" target="_blank" rel="noopener noreferrer">
         <div class="channel-left">
           <span class="channel-icon">📺</span>

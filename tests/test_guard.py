@@ -182,6 +182,7 @@ check(
 check(web_updater.theme_key_for_item("bath_slippers") == "bath", "새 테마 카테고리 매핑 정상")
 html = web_updater.generate_html("테스트", [], clean)
 check("욕실·샤워" in html and "차량·운전" in html, "도감 HTML 에 새 카테고리 필터가 생성됨")
+check("t.me" not in html and "텔레그램" not in html, "도감 HTML 에 텔레그램 배너·링크가 없음")
 
 case("9. 훅 슬라이드 문구가 테마와 일치 (렌더러 하드코딩 회귀 방지)")
 from slide_renderer import SlideRenderer
