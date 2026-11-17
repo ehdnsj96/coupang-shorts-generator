@@ -296,7 +296,7 @@ def sync_before_run(argv: List[str]) -> Optional[int]:
     Returns: 최신 코드로 재실행한 경우 그 종료 코드, 재실행이 필요 없으면 None.
     """
     result = sync_repo()
-    print(describe_sync(result))
+    print(describe_sync(result), flush=True)
     if result["status"] != "updated":
         return None
     # 이미 import 된 모듈은 이전 코드이므로 새 프로세스로 재실행해야 최신 코드가 적용된다.
@@ -327,7 +327,7 @@ def run_slot_in_new_process(
 
     env = dict(os.environ)
     env[SYNC_CHILD_ENV] = "1"
-    print("🚀 최신 코드로 새 프로세스 실행: " + " ".join(cmd[1:]))
+    print("🚀 최신 코드로 새 프로세스 실행: " + " ".join(cmd[1:]), flush=True)
     try:
         return subprocess.run(cmd, cwd=str(config.BASE_DIR), env=env).returncode
     except OSError as e:
@@ -572,7 +572,7 @@ def daemon_loop(slots: List[int] = DEFAULT_SLOTS, theme: str = "bright_room_mini
 
                 # 1) 실행 직전 최신 코드 동기화 (실패해도 경고만 찍고 로컬 코드로 계속)
                 sync_result = sync_repo()
-                print(describe_sync(sync_result))
+                print(describe_sync(sync_result), flush=True)
 
                 # 2) 방금 받은 최신 코드가 새로 import 되도록 새 프로세스에서 1회 실행
                 attempts[slot_id] = attempts.get(slot_id, 0) + 1
