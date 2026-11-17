@@ -174,6 +174,22 @@ check(star == "★ 5.0" and rev == "(후기 2만+)", f"상품 평점이 그대�
 star2, rev2 = renderer2._split_rating("(후기 5만+)")
 check(star2 == "" and rev2 == "(후기 5만+)", "별점이 없으면 빈 별점 (가짜 4.8 생성 없음)")
 
+case("11. 네트워크 실패 시 로컬 폴백 (무인 자동화가 막히지 않아야 함)")
+import publish_guard as pg
+
+_orig_rss, _orig_archive = pg.RSS_URL, pg.REMOTE_ARCHIVE_URL
+pg.RSS_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=INVALID_CHANNEL_FOR_TEST"
+pg.REMOTE_ARCHIVE_URL = "https://raw.githubusercontent.com/ehdnsj96/gooditem-archive/main/__no_such_file__.json"
+titles_offline, rss_ok_offline = pg.fetch_published_titles(timeout=6)
+archive_offline, archive_src_offline = pg.load_archive_items(timeout=6)
+guard_offline = pg.collect_guard({"used_items_by_theme": {"bath": ["bath_shower_filter"]}, "published_titles": ["x"]})
+pg.RSS_URL, pg.REMOTE_ARCHIVE_URL = _orig_rss, _orig_archive
+
+check(rss_ok_offline is False, "RSS 실패를 오류 없이 감지")
+check(archive_src_offline == "local" and len(archive_offline) == 12, f"도감은 로컬 사본으로 폴백 ({archive_src_offline}, {len(archive_offline)}종)")
+check(guard_offline["sources"]["archive_items"] == 12, "폴백 후에도 도감 잠금 12종 유지")
+check("bath_shower_filter" in guard_offline["blocked_item_ids"], "로컬 상태의 사용 상품도 그대로 잠금")
+
 print("\n" + "=" * 60)
 if failures:
     print(f"실패 {len(failures)}건:")
