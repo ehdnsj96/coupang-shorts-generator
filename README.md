@@ -14,16 +14,30 @@
 
 2. **하루 3회 골든 타임 슬롯 자동 데몬 (`auto_daily.py --daemon`)**
    - 08:00 (출근길 피크), 12:00 (점심시간 피크), 18:00 (퇴근·저녁 피크) 자동 순환
-   - 테마 자동 전환: 자취·리빙 ➔ 주방·살림 ➔ 식비·간편식 ➔ 데스크테리어
+   - 테마 자동 전환: 자취·리빙 ➔ 주방·살림 ➔ 식비·간편식 ➔ 데스크테리어 ➔ 욕실·샤워 ➔ 차 안 리셋 (테마당 실물 상품 3종)
    - 영상 렌더링 즉시 **모바일 누적 검색 도감 갱신(GitHub Pages)** 및 **텔레그램 채널(@ym_hotdeal) 자동 전송**
 
-3. **쿠팡 상품 원클릭 자동 수집기 (`product_collector.py`)**
+3. **삼중 중복 업로드 가드 (`publish_guard.py`)** — 같은 영상을 두 번 올리지 않는다
+   - 1단계 로컬: `daily_state.json` 의 `used_items_by_theme` / `published_titles`
+   - 2단계 원격 도감: `gooditem-archive/history.json` 에 이미 등록된 상품은 사용 처리 (실패 시 `web/history.json` 로컬 사본으로 폴백)
+   - 3단계 유튜브: 채널 RSS(`channel_id=UCuzNtUgtrJyPumZ5HGd-m0g`)에 이미 올라간 영상 제목은 그 회차를 건너뜀 (실패 시 로컬 상태로 폴백)
+   - 사용한 상품은 **절대 재사용하지 않으며**, 모든 테마의 미사용 실물 상품이 3종 미만이면 `None` 을 반환해 생성·업로드를 건너뛰고 안내만 남긴다 (과거 '같은 영상 무한 재업로드' 버그 수정)
+   - `daily_state.json` 은 `.gitignore` 로 제외되어 `git pull` 충돌·덮어쓰기가 발생하지 않는다 (에피소드 회차·사용 상품은 도감에서 자동 복원)
+
+4. **업로드 전 무결성 사전 검증 (`preflight.py`)**
+   - ① 모든 슬라이드·상품 이미지 파일 실제 존재 여부
+   - ② 각 상품 쿠팡 링크의 파트너스 태그 `lptag=AF7086198` 포함 여부
+   - ③ 영상 속 제품 3종과 슬라이드·설명란의 1:1 매칭(제품명·가격·이미지) 여부
+   - 하나라도 어긋나면 **생성·업로드를 차단**하고 문제 항목을 그대로 출력한다 (가짜 상품·깨진 링크가 나가는 일 방지)
+
+5. **쿠팡 상품 원클릭 자동 수집기 (`product_collector.py`)**
    - 상품 대표 이미지를 웹/CDN에서 자동으로 다운로드하고 640x640 정방형 캔버스로 자동 최적화
    - 대사(voice_script), 체크포인트, 뱃지, 태그 자동 생성
    - `custom_products.json`에 저장되어 데일리 러너에 즉시 자동 투입
 
 4. **모바일 최저가 실시간 검색 & 카테고리 필터 웹페이지**
    - 영상이 발행될 때마다 해당 상품들이 검색 목록에 자동으로 차곡차곡 누적
+   - 카테고리 칩: 주방·살림 / 자취·리빙 / 식비·간편식 / 데스크 / 욕실·샤워 / 차량·운전 (새 테마 자동 반영)
    - 0.01초 인스턴트 검색창 + 카테고리 칩 필터 + 쿠팡 다이렉트 검색 폴백
    - 라이브 주소: `https://ehdnsj96.github.io/gooditem-archive/`
 
@@ -44,6 +58,13 @@ python3 auto_daily.py --batch 3
 ### 3. 매일 3회(8시·12시·18시) 완전 무인 자동 데몬 (가장 추천!)
 ```bash
 nohup python3 auto_daily.py --daemon > daily.log 2>&1 &
+```
+
+### 4. 업로드·전송 없이 파이프라인만 점검 (테스트)
+```bash
+python3 auto_daily.py --dry-run --force   # 생성만, 유튜브 업로드·텔레그램·도감 푸시 없음
+python3 tests/test_guard.py               # 중복 가드·사전 검증·도감 정합성 테스트
+python3 tests/test_auto_daily.py          # 파이프라인 배선(가드→검증→기록) 테스트
 ```
 
 ---
@@ -78,6 +99,9 @@ python3 product_collector.py --list
 ## 📁 주요 디렉터리 및 파일 구조
 
 - `auto_daily.py`: 하루 3회 무인 자동화 러너 (슬롯 관리, 웹페이지 갱신, 텔레그램 배달)
+- `publish_guard.py`: 삼중 중복 업로드 가드 (로컬 상태 · 원격 도감 · 유튜브 RSS)
+- `preflight.py`: 업로드 전 무결성 사전 검증 (이미지 존재 · lptag · 1:1 매칭)
+- `tests/`: 중복 가드·사전 검증 로컬 테스트
 - `product_collector.py`: 신규 쿠팡 상품 자동 수집 및 이미지 다운로더
 - `product_pool.py`: 테마별 상품 풀 및 custom_products 자동 병합 엔진
 - `slide_renderer.py`: 화사한 룸 클린 디자인 & 슬라이드 렌더러

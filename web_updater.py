@@ -27,8 +27,20 @@ def copy_product_assets():
             shutil.copy(p, dst)
 
 
+def theme_key_for_item(item_id: str) -> str:
+    """상품 id 로 어느 테마에 속한 상품인지 찾는다."""
+    for theme_key, theme_data in THEMES.items():
+        if any(p.item_id == item_id for p in theme_data["products"]):
+            return theme_key
+    return "living"
+
+
 def sanitize_history(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """과거 더미나 중복 아이템을 정리하고, 4대 활성 영상의 12개 제품과 번호(1~3)를 완벽히 보장"""
+    """도감에 실제로 게시된 항목만 유지하고, 상품 정보를 상품 풀과 1:1 로 맞춘다.
+
+    주의: 아직 영상에 올리지 않은 상품은 절대 미리 채우지 않는다.
+    (history.json 은 실제 게시 이력만 담는 파일이다)
+    """
     product_lookup = {}
     for theme_key, theme_data in THEMES.items():
         for idx, p in enumerate(theme_data["products"]):
@@ -44,42 +56,30 @@ def sanitize_history(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             or product_lookup.get(item.get("coupang_url"))
             or product_lookup.get(item.get("item_id"))
         )
-        if match:
-            theme_key, num, p = match
-            if p.item_id in seen:
-                continue
-            seen.add(p.item_id)
-            img_file = Path(p.image_path).name if getattr(p, "image_path", None) else f"{p.item_id}.png"
-            cleaned.append({
-                "item_id": p.item_id,
-                "title": p.title,
-                "price": p.price,
-                "tag": p.tag or p.discount,
-                "desc": p.caption1 or p.caption2 or p.header_badge,
-                "img_name": img_file,
-                "coupang_url": p.coupang_url,
-                "category_key": theme_key,
-                "item_num": num
-            })
+        if not match:
+            continue
+        theme_key, pool_num, p = match
+        if p.item_id in seen:
+            continue
+        seen.add(p.item_id)
+        img_file = Path(p.image_path).name if getattr(p, "image_path", None) else f"{p.item_id}.png"
+        # 영상 안에서의 순번(01~03)은 게시 당시 값을 유지하고, 없으면 풀 순서를 쓴다.
+        item_num = item.get("item_num")
+        if not isinstance(item_num, int) or not (1 <= item_num <= 3):
+            item_num = pool_num
+        cleaned.append({
+            "item_id": p.item_id,
+            "title": p.title,
+            "price": p.price,
+            "tag": p.tag or p.discount,
+            "desc": p.caption1 or p.caption2 or p.header_badge,
+            "img_name": img_file,
+            "coupang_url": p.coupang_url,
+            "category_key": theme_key,
+            "item_num": item_num
+        })
 
-    # 누락된 테마 아이템이 있으면 12종 완성
-    for theme_key in ["kitchen", "living", "food", "desk"]:
-        for idx, p in enumerate(THEMES[theme_key]["products"]):
-            if p.item_id not in seen:
-                seen.add(p.item_id)
-                img_file = Path(p.image_path).name if getattr(p, "image_path", None) else f"{p.item_id}.png"
-                cleaned.append({
-                    "item_id": p.item_id,
-                    "title": p.title,
-                    "price": p.price,
-                    "tag": p.tag or p.discount,
-                    "desc": p.caption1 or p.caption2 or p.header_badge,
-                    "img_name": img_file,
-                    "coupang_url": p.coupang_url,
-                    "category_key": theme_key,
-                    "item_num": idx + 1
-                })
-
+    cleaned.sort(key=lambda x: (x["category_key"], x["item_num"]))
     return cleaned
 
 
@@ -108,14 +108,18 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         "kitchen": ("주방·살림", "🍳"),
         "food": ("식비·간편식", "🥗"),
         "desk": ("데스크테리어", "💻"),
+        "bath": ("욕실·샤워", "🛁"),
+        "car": ("차량·운전", "🚗"),
     }
 
-    # 동영상 테마별 그룹 빌드
+    # 동영상 테마별 그룹 빌드 (카테고리가 늘어나면 이 목록만 확장하면 된다)
     categories = [
         ("kitchen", "🍳 주방·살림", "🍳 주방 살림 혁명 TOP 3"),
         ("living", "🏠 자취·리빙", "🏠 자취생 삶의 질 떡상 TOP 3"),
         ("food", "🥗 식비·간편식", "🥗 식비 절약 가성비 간편식 TOP 3"),
         ("desk", "💻 데스크", "💻 직장인 데스크테리어 TOP 3"),
+        ("bath", "🛁 욕실·샤워", "🛁 욕실·샤워 리셋 TOP 3"),
+        ("car", "🚗 차량·운전", "🚗 차 안 리셋 꿀템 TOP 3"),
     ]
 
     section_blocks = []
@@ -608,6 +612,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         <button class="pill-btn" data-filter="living">🏠 자취·리빙</button>
         <button class="pill-btn" data-filter="food">🥗 식비·간편식</button>
         <button class="pill-btn" data-filter="desk">💻 데스크</button>
+        <button class="pill-btn" data-filter="bath">🛁 욕실·샤워</button>
+        <button class="pill-btn" data-filter="car">🚗 차량·운전</button>
       </div>
     </div>
 
@@ -727,7 +733,7 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
 
     // URL Hash support (#kitchen, #living, #food, #desk)
     const hash = window.location.hash.replace("#", "");
-    if (hash && ["kitchen", "living", "food", "desk"].includes(hash)) {{
+    if (hash && ["kitchen", "living", "food", "desk", "bath", "car"].includes(hash)) {{
       const targetBtn = document.querySelector(`.pill-btn[data-filter="${{hash}}"]`);
       if (targetBtn) {{
         targetBtn.click();
@@ -769,7 +775,7 @@ def update_link_page(theme_name: str, items: List[ProductItem], auto_push: bool 
     # Prepend new featured items to history if not present
     for i, item in enumerate(items[:3]):
         img_file = Path(item.image_path).name if getattr(item, "image_path", None) else f"{item.item_id}.png"
-        cat_key = "living" if "living" in item.item_id else ("kitchen" if "kitchen" in item.item_id else ("food" if "food" in item.item_id else "desk"))
+        cat_key = theme_key_for_item(item.item_id)
         h_entry = {
             "item_id": item.item_id,
             "title": item.title,

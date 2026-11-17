@@ -1,7 +1,29 @@
-from typing import List, Tuple
+import re
+from typing import List, Optional, Set, Tuple
 from models import ShortsScript, Slide
 from product_pool import THEMES, ProductItem
 import config
+
+TITLE_PREFIX = "아직도 이거 모르고 산다고?"
+TITLE_SUFFIX = "쿠팡 꿀템 TOP 3 #shorts"
+
+
+def build_episode_title(theme_key: str, episode_num: int) -> str:
+    """테마·회차별 유튜브 제목. 1탄은 기존 4편과 동일한 포맷을 유지한다."""
+    theme_info = THEMES.get(theme_key, THEMES["living"])
+    theme_name = theme_info["theme_name"]
+    if episode_num > 1:
+        return f"{TITLE_PREFIX} {theme_name} {episode_num}탄 {TITLE_SUFFIX}"
+    return f"{TITLE_PREFIX} {theme_name} {TITLE_SUFFIX}"
+
+
+def normalize_title(text: str) -> str:
+    """제목 비교용 정규화 (공백·대소문자·특수기호 차이 무시)."""
+    if not text:
+        return ""
+    cleaned = re.sub(r"[\s#]+", "", str(text)).lower()
+    cleaned = cleaned.replace("#shorts", "").replace("shorts", "")
+    return cleaned
 
 
 def build_episode(theme_key: str, episode_num: int, items: List[ProductItem]) -> ShortsScript:
@@ -9,9 +31,8 @@ def build_episode(theme_key: str, episode_num: int, items: List[ProductItem]) ->
     assets = config.ASSETS_DIR
 
     theme_name = theme_info["theme_name"]
-    ep_prefix = ""
 
-    youtube_title = f"{ep_prefix}아직도 이거 모르고 산다고? {theme_name} 쿠팡 꿀템 TOP 3 #shorts"
+    youtube_title = build_episode_title(theme_key, episode_num)
 
     # 제품명 리스트 (깔끔한 텍스트 포맷)
     product_names_text = "\n".join([
@@ -112,36 +133,55 @@ def build_episode(theme_key: str, episode_num: int, items: List[ProductItem]) ->
     )
 
 
-def get_next_dynamic_episode(state: dict) -> Tuple[ShortsScript, dict]:
+def get_next_dynamic_episode(
+    state: dict,
+    blocked_item_ids: Optional[Set[str]] = None,
+    published_titles: Optional[Set[str]] = None,
+) -> Tuple[Optional[ShortsScript], dict]:
+    """아직 쓰지 않은 상품 3종으로 다음 에피소드를 만든다.
+
+    - 사용 이력(로컬 상태 + 도감)에 있는 상품은 절대 재사용하지 않는다.
+      (과거 버그: 상품이 3개뿐이라 다 쓰면 used 를 비우고 같은 영상을 무한 재업로드)
+    - 이미 게시된 제목의 회차도 건너뛴다.
+    - 어떤 테마에도 새 상품 3종이 남아 있지 않으면 None 을 반환하고,
+      호출 측(auto_daily)이 생성·업로드를 건너뛴다.
+    """
     theme_keys = list(THEMES.keys())
-    theme_idx = state.get("current_theme_index", 0) % len(theme_keys)
-    theme_key = theme_keys[theme_idx]
+    start_idx = state.get("current_theme_index", 0) % len(theme_keys)
 
-    theme_info = THEMES[theme_key]
-    all_products = theme_info["products"]
+    blocked = set(blocked_item_ids or set())
+    published = set(published_titles or set())
 
-    used_items = state.get("used_items_by_theme", {}).get(theme_key, [])
-    available_items = [p for p in all_products if p.item_id not in used_items]
+    used_map = state.setdefault("used_items_by_theme", {})
+    episode_map = state.setdefault("episode_counts_by_theme", {})
 
-    if len(available_items) < 3:
-        used_items = []
-        available_items = all_products
+    for offset in range(len(theme_keys)):
+        theme_idx = (start_idx + offset) % len(theme_keys)
+        theme_key = theme_keys[theme_idx]
+        theme_info = THEMES[theme_key]
 
-    selected_items = available_items[:3]
-    new_used_ids = used_items + [p.item_id for p in selected_items]
+        used_items = set(used_map.get(theme_key, []))
+        available_items = [
+            p for p in theme_info["products"]
+            if p.item_id not in used_items and p.item_id not in blocked
+        ]
+        if len(available_items) < 3:
+            continue
 
-    episodes_count = state.get("episode_counts_by_theme", {}).get(theme_key, 0) + 1
+        episodes_count = episode_map.get(theme_key, 0) + 1
+        candidate_title = build_episode_title(theme_key, episodes_count)
+        if normalize_title(candidate_title) in published:
+            # 같은 제목의 회차가 이미 유튜브/도감에 올라가 있으면 이 테마는 건너뛴다.
+            print(f"⏭️  '{candidate_title}' 은 이미 게시된 회차라 건너뜁니다.")
+            continue
 
-    script = build_episode(theme_key, episodes_count, selected_items)
+        selected_items = available_items[:3]
+        script = build_episode(theme_key, episodes_count, selected_items)
 
-    if "used_items_by_theme" not in state:
-        state["used_items_by_theme"] = {}
-    state["used_items_by_theme"][theme_key] = new_used_ids
+        used_map[theme_key] = used_map.get(theme_key, []) + [p.item_id for p in selected_items]
+        episode_map[theme_key] = episodes_count
+        state["current_theme_index"] = (theme_idx + 1) % len(theme_keys)
 
-    if "episode_counts_by_theme" not in state:
-        state["episode_counts_by_theme"] = {}
-    state["episode_counts_by_theme"][theme_key] = episodes_count
+        return script, state
 
-    state["current_theme_index"] = (theme_idx + 1) % len(theme_keys)
-
-    return script, state
+    return None, state

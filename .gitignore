@@ -8,5 +8,8 @@ temp_*
 .nfs*
 *.tmp
 
+# 실행 상태 파일 (git pull 시 원격 파일과 충돌/덮어쓰기 방지)
+daily_state.json
+
 # Sub-repo git dir
 web/.git/

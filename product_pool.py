@@ -249,6 +249,120 @@ THEMES: Dict[str, dict] = {
                 coupang_url="https://www.coupang.com/np/search?q=%EB%AC%B4%EC%86%8C%EC%9D%8C%20%EC%9D%B8%EC%B2%B4%EA%B3%B5%ED%95%99%20%EB%B2%84%ED%8B%B0%EC%BB%AC%EB%A7%88%EC%9A%B0%EC%8A%A4&lptag=AF7086198"
             )
         ]
+    },
+
+    "bath": {
+        "theme_name": "욕실·샤워 리셋",
+        "hook_title": "샤워만 해도 리셋되는\n욕실 꿀템 TOP 3!",
+        "hook_voice": "샤워기 물이랑 욕실 바닥, 아직도 그냥 쓰고 계셨나요? 사천 원대부터 시작하는, 욕실이 확 달라지는 쿠팡 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "샤워기 필터, 언제 갈았죠?",
+        "hook_caption2": "욕실이 확 달라지는 찐 꿀템 3가지!",
+        "hook_image": str(assets / "bath_shower_filter.png"),
+        "hashtags": ["#욕실꿀템", "#샤워기필터", "#욕실화추천", "#쿠팡추천", "#자취꿀템"],
+        "products": [
+            ProductItem(
+                item_id="bath_shower_filter",
+                title="코멧 홈 파워수압 필터 샤워기 본품 + 필터 2개입",
+                header_badge="코멧 파워수압 샤워기",
+                discount="37% 할인",
+                price="6,290원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 2만+)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="수압은 세게, 물은 깨끗하게!",
+                caption2="필터 2개입 포함 6,290원",
+                voice_script="첫 번째는 코멧 홈 파워수압 필터 샤워기입니다. 수압은 세게 올려주면서 미세 필터가 물속 이물질까지 걸러줘서, 샤워하고 나면 피부가 확 달라집니다.",
+                image_path=str(assets / "bath_shower_filter.png"),
+                coupang_url="https://www.coupang.com/np/search?q=%EC%BD%94%EB%A9%A7%20%ED%99%88%20%ED%8C%8C%EC%9B%8C%EC%88%98%EC%95%95%20%ED%95%84%ED%84%B0%20%EC%83%A4%EC%9B%8C%EA%B8%B0&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="bath_microfilter",
+                title="코멧 홈 샤워기 헤드 퓨어 마이크로 필터 3개",
+                header_badge="마이크로 필터 교체팩",
+                discount="63% 할인",
+                price="7,210원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 1.3만+)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="갈아주는 순간 물이 달라져요",
+                caption2="3개입이라 1년 내내 넉넉하게",
+                voice_script="두 번째는 코멧 홈 마이크로 필터 3개입입니다. 샤워기 필터는 두세 달마다 갈아줘야 하는데, 세 개들이라 일 년 내내 넉넉하게 쓸 수 있어요.",
+                image_path=str(assets / "bath_microfilter.png"),
+                coupang_url="https://www.coupang.com/np/search?q=%EC%BD%94%EB%A9%A7%20%ED%99%88%20%EC%83%A4%EC%9B%8C%EA%B8%B0%20%ED%97%A4%EB%93%9C%20%ED%93%A8%EC%96%B4%20%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%20%ED%95%84%ED%84%B0&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="bath_slippers",
+                title="글랑앤 미끄럼방지 욕실화 실내화 남성용, 그레이",
+                header_badge="미끄럼방지 욕실화",
+                discount="40% 할인",
+                price="5,900원",
+                tag="BEST AWARDS",
+                card_badge_left="★ 4.5 (후기 5만+)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="물기 많은 욕실 바닥 미끄럼 방지",
+                caption2="후기 5만 개 넘은 검증된 기본템",
+                voice_script="세 번째는 글랑앤 미끄럼방지 욕실화입니다. 물기 많은 욕실 바닥에서도 미끄러지지 않고, 물빠짐 구멍 덕분에 늘 뽀송하게 신을 수 있어요.",
+                image_path=str(assets / "bath_slippers.png"),
+                coupang_url="https://www.coupang.com/np/search?q=%EA%B8%80%EB%9E%91%EC%95%A4%20%EB%AF%B8%EB%81%84%EB%9F%BC%EB%B0%A9%EC%A7%80%20%EC%9A%95%EC%8B%A4%ED%99%94%20%EB%82%A8%EC%84%B1%EC%9A%A9&lptag=AF7086198"
+            )
+        ]
+    },
+
+    "car": {
+        "theme_name": "차 안 리셋 꿀템",
+        "hook_title": "세차장 안 가도 되는\n차 안 꿀템 TOP 3!",
+        "hook_voice": "세차장 갈 시간도 없고 차 냄새는 신경 쓰이시죠? 물 없이도 차가 반짝이는, 쿠팡 차량 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "세차할 시간이 없으시다면?",
+        "hook_caption2": "물 없이 차가 반짝이는 꿀템 3가지!",
+        "hook_image": str(assets / "car_waterless.png"),
+        "hashtags": ["#차량용품", "#물없이세차", "#차량방향제", "#셀프세차", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="car_diffuser",
+                title="코코도르 우드볼 차량용 디퓨저 50ml 2개입 우디호텔",
+                header_badge="우드볼 차량 디퓨저",
+                discount="53% 할인",
+                price="7,900원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 1.5만+)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="시동 걸면 은은하게 퍼지는 호텔 향",
+                caption2="2개입이라 대시보드까지 커버",
+                voice_script="첫 번째는 코코도르 우드볼 차량용 디퓨저입니다. 시동 걸자마자 호텔 라운지 향이 은은하게 퍼져서, 차에 타는 순간 기분이 확 좋아집니다.",
+                image_path=str(assets / "car_diffuser.png"),
+                coupang_url="https://www.coupang.com/np/search?q=%EC%BD%94%EC%BD%94%EB%8F%84%EB%A5%B4%20%EC%9A%B0%EB%93%9C%EB%B3%BC%20%EC%B0%A8%EB%9F%89%EC%9A%A9%20%EB%94%94%ED%93%A8%EC%A0%80%20%EC%9A%B0%EB%94%94%ED%98%B8%ED%85%94&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="car_waterless",
+                title="카렉스 스마트 워터리스 카워시 750ml",
+                header_badge="물없이 세차 카워시",
+                discount="39% 할인",
+                price="4,200원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 4,300+)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="물 없이 뿌리고 닦으면 끝!",
+                caption2="세차장 줄 설 일 없어져요",
+                voice_script="두 번째는 카렉스 스마트 워터리스 카워시입니다. 물 없이 뿌리고 닦기만 하면 오염 제거부터 광택까지 한 번에 끝나서, 아파트 주차장에서도 세차가 됩니다.",
+                image_path=str(assets / "car_waterless.png"),
+                coupang_url="https://www.coupang.com/np/search?q=%EC%B9%B4%EB%A0%89%EC%8A%A4%20%EC%8A%A4%EB%A7%88%ED%8A%B8%20%EC%9B%8C%ED%84%B0%EB%A6%AC%EC%8A%A4%20%EC%B9%B4%EC%9B%8C%EC%8B%9C&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="car_wax",
+                title="불스원 하이브리드 물왁스 600ml",
+                header_badge="불스원 하이브리드 왁스",
+                discount="베스트상품",
+                price="5,540원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 9,500+)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="물 묻은 차에 뿌리고 닦으면 광택",
+                caption2="왁스칠 한 번에 비 오염까지",
+                voice_script="세 번째는 불스원 하이브리드 물왁스입니다. 물 묻은 차에 그대로 뿌리고 닦기만 해도 광택이 올라와서, 왁스칠 한 번으로 한 달은 반짝입니다.",
+                image_path=str(assets / "car_wax.png"),
+                coupang_url="https://www.coupang.com/np/search?q=%EB%B6%88%EC%8A%A4%EC%9B%90%20%ED%95%98%EC%9D%B4%EB%B8%8C%EB%A6%AC%EB%93%9C%20%EB%AC%BC%EC%99%81%EC%8A%A4&lptag=AF7086198"
+            )
+        ]
     }
 }
 

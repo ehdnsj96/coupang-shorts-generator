@@ -1,0 +1,157 @@
+# -*- coding: utf-8 -*-
+"""중복 방지 가드·사전 검증·도감 정합성 로컬 테스트.
+
+실행: python3 tests/test_guard.py
+(유튜브 업로드·텔레그램 전송은 절대 호출하지 않는다)
+"""
+
+import copy
+import json
+import sys
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE))
+
+import config
+import episode_builder
+import preflight
+import publish_guard
+import web_updater
+from product_pool import THEMES
+from models import ShortsScript, Slide
+
+
+def case(name):
+    print(f"\n=== {name} ===")
+
+
+failures = []
+
+
+def check(cond, message):
+    print(("  ✅ " if cond else "  ❌ ") + message)
+    if not cond:
+        failures.append(message)
+
+
+# ---------------------------------------------------------------- 1. 상태 복원
+case("1. 도감(history.json)으로 상태 자동 복원")
+fresh = {"completed_slots": [], "history": []}
+archive_items, source = publish_guard.load_archive_items()
+check(len(archive_items) == 12, f"로컬 도감 사본 12종 읽기 (출처={source})")
+state = publish_guard.reconcile_state_with_archive(fresh, archive_items)
+restored = sum(len(v) for v in state["used_items_by_theme"].values())
+check(restored == 12, f"도감에 올라간 12종이 used 로 자동 처리됨 (실제 {restored})")
+check(
+    all(state["episode_counts_by_theme"].get(k, 0) >= 1 for k in ["living", "kitchen", "food", "desk"]),
+    "기존 4대 테마 회차가 1탄으로 복원됨",
+)
+
+# ------------------------------------------------------- 2. 새 회차 자동 선택
+case("2. 새 테마 자동 선택 (기존 4테마 소진 상태)")
+guard = {
+    "blocked_item_ids": set(),
+    "published_titles": set(state.get("published_titles", [])),
+}
+for ids in state["used_items_by_theme"].values():
+    guard["blocked_item_ids"].update(ids)
+
+script, state = episode_builder.get_next_dynamic_episode(
+    state,
+    blocked_item_ids=guard["blocked_item_ids"],
+    published_titles=guard["published_titles"],
+)
+check(script is not None, "미사용 상품이 있으므로 새 에피소드가 생성됨")
+check(script is not None and script.topic.startswith("욕실·샤워 리셋"), f"첫 새 회차는 욕실 테마 (topic={script.topic if script else None})")
+check(script is not None and len(script.items) == 3, "상품 3종으로 구성됨")
+check(
+    script is not None and all(p.item_id.startswith("bath_") for p in script.items),
+    f"선택 상품: {[p.item_id for p in script.items] if script else None}",
+)
+
+# ------------------------------------------------------------- 3. 사전 검증 통과
+case("3. 사전 검증(Preflight) 통과")
+ok, problems = preflight.check_episode(script)
+check(ok, f"이미지·lptag·1:1 매칭 검사 통과 {problems if problems else ''}")
+
+# --------------------------------------------------------------- 4. 슬라이드 렌더
+case("4. 슬라이드 5장 실제 렌더링")
+from slide_renderer import SlideRenderer
+
+renderer = SlideRenderer()
+out_dir = config.OUTPUT_DIR / "guard_test"
+out_dir.mkdir(parents=True, exist_ok=True)
+rendered = []
+for i, slide in enumerate(script.slides):
+    path = out_dir / f"bath_ep1_slide_{i:02d}.png"
+    renderer.render_slide(slide, path)
+    rendered.append(path)
+check(all(p.exists() and p.stat().st_size > 10000 for p in rendered), f"슬라이드 5장 생성 ({[p.name for p in rendered]})")
+
+# --------------------------------------- 5. 이미 게시된 제목 회차는 건너뛰기
+case("5. 유튜브 RSS 제목 잠금 동작 (이미 게시된 회차 skip)")
+published = set(state.get("published_titles", []))
+published.add(episode_builder.normalize_title(script.youtube_title))
+state_after = copy.deepcopy(state)
+script2, state_after = episode_builder.get_next_dynamic_episode(
+    state_after,
+    blocked_item_ids=guard["blocked_item_ids"],
+    published_titles=published,
+)
+check(script2 is not None and script2.topic.startswith("차 안 리셋"), f"욕실 회차는 건너뛰고 차량 테마로 (topic={script2.topic if script2 else None})")
+ok2, problems2 = preflight.check_episode(script2)
+check(ok2, f"차량 회차 사전 검증 통과 {problems2 if problems2 else ''}")
+
+# ------------------------------------------- 6. 모든 상품 소진 시 None 반환
+case("6. 모든 테마 소진 시 None (기존 무한 중복 버그 회귀 테스트)")
+state_exhausted = copy.deepcopy(state_after)
+script3, state_exhausted = episode_builder.get_next_dynamic_episode(
+    state_exhausted,
+    blocked_item_ids=set(),
+    published_titles=set(),
+)
+check(script3 is None, "미사용 상품이 없으면 None 을 반환 (used 리셋 후 재업로드하지 않음)")
+total_used = set()
+for ids in state_exhausted["used_items_by_theme"].values():
+    total_used.update(ids)
+check(len(total_used) == 18, f"18종 전부 사용 처리됨 (실제 {len(total_used)})")
+
+# ------------------------------------------------- 7. 사전 검증 실패 시 차단
+case("7. 사전 검증 실패 케이스 차단")
+broken = copy.deepcopy(script)
+
+
+class _Bad:
+    pass
+
+
+bad_items = [copy.deepcopy(p) for p in broken.items]
+bad_items[1].image_path = str(config.ASSETS_DIR / "없는이미지.png")
+bad_items[2].coupang_url = "https://www.coupang.com/np/search?q=test"  # lptag 없음
+broken.items = bad_items
+ok3, problems3 = preflight.check_episode(broken)
+check(not ok3, "깨진 에피소드는 검증 실패로 차단됨")
+check(any("이미지 파일이 없습니다" in p for p in problems3), "누락 이미지가 지적됨")
+check(any("lptag=AF7086198" in p for p in problems3), "쿠팡 링크 lptag 누락이 지적됨")
+
+# --------------------------------------------- 8. 도감은 게시분만 유지
+case("8. 도감(history.json) 정합성 — 미게시 상품 미리 올리지 않음")
+local_history = json.loads(publish_guard.LOCAL_ARCHIVE_FILE.read_text(encoding="utf-8"))
+clean = web_updater.sanitize_history(local_history)
+check(len(clean) == 12, f"기존 게시분 12종 유지 (실제 {len(clean)})")
+check(
+    not any(x["item_id"].startswith(("bath_", "car_")) for x in clean),
+    "아직 게시하지 않은 욕실·차량 상품은 도감에 포함되지 않음",
+)
+check(web_updater.theme_key_for_item("bath_slippers") == "bath", "새 테마 카테고리 매핑 정상")
+html = web_updater.generate_html("테스트", [], clean)
+check("욕실·샤워" in html and "차량·운전" in html, "도감 HTML 에 새 카테고리 필터가 생성됨")
+
+print("\n" + "=" * 60)
+if failures:
+    print(f"실패 {len(failures)}건:")
+    for f in failures:
+        print("  -", f)
+    sys.exit(1)
+print("모든 테스트 통과 ✅")

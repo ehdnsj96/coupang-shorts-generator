@@ -19,12 +19,19 @@ if sys.platform == "win32":
         pass
 
 from models import ShortsScript
-from episode_builder import get_next_dynamic_episode
+from episode_builder import get_next_dynamic_episode, normalize_title
 from slide_renderer import SlideRenderer
 from video_builder import VideoBuilder
 from voice_generator import VoiceGenerator
 from youtube_uploader import YouTubeUploader
 from web_updater import update_link_page
+from publish_guard import (
+    collect_guard,
+    describe_guard,
+    load_archive_items,
+    reconcile_state_with_archive,
+)
+from preflight import check_episode, format_problems
 import config
 
 STATE_FILE = config.BASE_DIR / "daily_state.json"
@@ -115,7 +122,8 @@ def run_daily_job(
     force: bool = False,
     theme: str = "bright_room_minimal",
     send_telegram: bool = True,
-    upload_youtube: bool = False
+    upload_youtube: bool = False,
+    dry_run: bool = False
 ) -> Optional[Path]:
     now = datetime.now()
     today_str = now.strftime("%Y-%m-%d")
@@ -131,8 +139,39 @@ def run_daily_job(
             return Path(state["history"][-1]["video_path"])
         return None
 
-    # 다음 순번 에피소드 자동 선택 (테마 및 상품 자동 회전)
-    selected_script, state = get_next_dynamic_episode(state)
+    # 도감(gooditem-archive)에 이미 올라간 상품은 상태에 자동 반영
+    # → daily_state.json 이 유실되거나 git pull 로 되돌아가도 중복이 생기지 않는다.
+    archive_items, _archive_source = load_archive_items()
+    state = reconcile_state_with_archive(state, archive_items)
+
+    # 삼중 중복 가드: 로컬 상태 + 원격 도감 + 유튜브 채널 RSS
+    guard = collect_guard(state)
+    print(describe_guard(guard))
+    for warning in guard["warnings"]:
+        print(f"   · {warning}")
+
+    # 다음 순번 에피소드 자동 선택 (테마 및 상품 자동 회전, 사용 상품 재사용 금지)
+    selected_script, state = get_next_dynamic_episode(
+        state,
+        blocked_item_ids=guard["blocked_item_ids"],
+        published_titles=guard["published_titles"],
+    )
+
+    if selected_script is None:
+        print("\n🚫 새로운 미사용 상품이 없어 쇼츠 생성·업로드를 건너뜁니다.")
+        print("   모든 테마의 미사용 실물 상품이 3종 미만입니다.")
+        print("   product_pool.py 에 새 실물 상품(실제 제품 이미지 포함)을 추가하면 다음 슬롯부터 다시 생성됩니다.")
+        save_state(state)
+        return None
+
+    # 업로드 전 무결성 사전 검증 (이미지·lptag·1:1 매칭)
+    preflight_ok, problems = check_episode(selected_script)
+    if not preflight_ok:
+        print(format_problems(problems))
+        print("   → 상태를 저장하지 않고 종료합니다(상품 소모 없음).")
+        save_state(state)
+        return None
+    print("✅ 사전 검증 통과: 상품 이미지 3종 존재 · 쿠팡 링크 lptag · 1:1 매칭 정상")
 
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     work_dir = config.OUTPUT_DIR / f"temp_{timestamp}"
@@ -200,8 +239,8 @@ def run_daily_job(
     youtube_url = None
     uploader = YouTubeUploader()
 
-    # 유튜브 자동 업로드 시도
-    if upload_youtube or uploader.is_configured():
+    # 유튜브 자동 업로드 시도 (dry_run 이면 절대 업로드하지 않음)
+    if not dry_run and (upload_youtube or uploader.is_configured()):
         print("\n📺 YouTube 자동 업로드 모듈 가동...")
         youtube_url = uploader.upload(
             video_path=output_video_path,
@@ -225,15 +264,15 @@ def run_daily_job(
     print(caption_text)
     print("\n-------------------------------------------------------")
 
-    # 텔레그램 채널로 전송
-    if send_telegram:
+    # 텔레그램 채널로 전송 (dry_run 이면 건너뜀)
+    if send_telegram and not dry_run:
         send_video_to_telegram(output_video_path, caption_text)
 
-    # 모바일 웹 링크 페이지(GitHub Pages) 자동 갱신
-    if selected_script.items:
+    # 모바일 웹 링크 페이지(GitHub Pages) 자동 갱신 — 실제 게시된 영상만 도감에 올린다
+    if selected_script.items and not dry_run:
         print("\n🌐 모바일 링크 페이지(GitHub Pages) 자동 갱신 중...")
         try:
-            update_link_page(theme_name=selected_script.topic, items=selected_script.items, auto_push=True)
+            update_link_page(theme_name=selected_script.topic, items=selected_script.items, auto_push=not dry_run)
             print("✅ 모바일 웹페이지 최신 꿀템 링크 자동 반영 완료!")
         except Exception as e:
             print(f"⚠️ 모바일 웹페이지 갱신 중 오류: {e}")
@@ -260,12 +299,19 @@ def run_daily_job(
     if "history" not in state:
         state["history"] = []
     state["history"].append(history_entry)
+
+    # 게시된 회차 제목을 상태에 남겨 다음 실행에서 같은 제목 회차를 건너뛰게 한다.
+    published_titles = state.setdefault("published_titles", [])
+    normalized = normalize_title(selected_script.youtube_title)
+    if normalized and normalized not in published_titles:
+        published_titles.append(normalized)
+
     save_state(state)
 
     return output_video_path
 
 
-def daemon_loop(slots: List[int] = DEFAULT_SLOTS, theme: str = "bright_room_minimal", send_telegram: bool = True, upload_youtube: bool = False):
+def daemon_loop(slots: List[int] = DEFAULT_SLOTS, theme: str = "bright_room_minimal", send_telegram: bool = True, upload_youtube: bool = False, dry_run: bool = False):
     slot_desc = ", ".join([f"{h:02d}:00" for h in sorted(slots)])
     print(f"🕒 데일리 쇼츠 하루 3회 무인 자동화 백그라운드 데몬 가동 중...")
     print(f"⏰ 지정된 슬롯 시각: 매일 [{slot_desc}] 총 {len(slots)}회 자동 생성 및 업로드")
@@ -285,7 +331,7 @@ def daemon_loop(slots: List[int] = DEFAULT_SLOTS, theme: str = "bright_room_mini
                 # 오늘 완료된 슬롯 수 계산
                 today_done = [s for s in completed_slots if s.startswith(today_str)]
                 print(f"\n[알림] ⏰ {current_hour:02d}:00 슬롯 도달! (오늘 {len(today_done) + 1}/{len(slots)}번째 영상 생성 시작)")
-                run_daily_job(slot_id=slot_id, force=False, theme=theme, send_telegram=send_telegram, upload_youtube=upload_youtube)
+                run_daily_job(slot_id=slot_id, force=False, theme=theme, send_telegram=send_telegram, upload_youtube=upload_youtube, dry_run=dry_run)
 
         time.sleep(60)
 
@@ -299,10 +345,12 @@ def main():
     parser.add_argument("--no-telegram", action="store_true", help="텔레그램 전송 건너뛰기")
     parser.add_argument("--youtube", action="store_true", help="생성 완료 후 YouTube Data API로 자동 업로드")
     parser.add_argument("--daemon", action="store_true", help="하루 3회 지정 슬롯에 자동 실행하는 데몬 모드")
+    parser.add_argument("--dry-run", action="store_true", help="생성만 하고 유튜브 업로드·텔레그램 발송·도감 푸시는 하지 않음(테스트용)")
     parser.add_argument("--slots", type=int, nargs="+", default=DEFAULT_SLOTS, help="실행 시각 슬롯 목록 (기본: 8 12 18)")
 
     args = parser.parse_args()
     send_telegram = not args.no_telegram
+    dry_run = args.dry_run
 
     if args.batch > 0:
         print(f"🎬 연속 {args.batch}개 영상 일괄 배치 생성을 시작합니다...\n")
@@ -310,14 +358,14 @@ def main():
             now = datetime.now()
             batch_slot_id = f"batch_{now.strftime('%Y%m%d_%H%M%S')}_{i+1}"
             print(f"\n>>> [배치 {i+1}/{args.batch}] 생성 시작 <<<")
-            run_daily_job(slot_id=batch_slot_id, force=True, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube)
+            run_daily_job(slot_id=batch_slot_id, force=True, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube, dry_run=dry_run)
             if i < args.batch - 1:
                 time.sleep(2)
         print(f"\n🎉 총 {args.batch}개 영상 일괄 배치 제작 완료!")
     elif args.daemon:
-        daemon_loop(slots=args.slots, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube)
+        daemon_loop(slots=args.slots, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube, dry_run=dry_run)
     else:
-        run_daily_job(force=args.force or args.now, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube)
+        run_daily_job(force=args.force or args.now, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube, dry_run=dry_run)
 
 
 if __name__ == "__main__":
