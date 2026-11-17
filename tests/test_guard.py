@@ -39,10 +39,10 @@ def check(cond, message):
 case("1. 도감(history.json)으로 상태 자동 복원")
 fresh = {"completed_slots": [], "history": []}
 archive_items, source = publish_guard.load_archive_items()
-check(len(archive_items) == 12, f"로컬 도감 사본 12종 읽기 (출처={source})")
+check(len(archive_items) >= 15, f"도감 {len(archive_items)}종 읽기 (출처={source})")
 state = publish_guard.reconcile_state_with_archive(fresh, archive_items)
 restored = sum(len(v) for v in state["used_items_by_theme"].values())
-check(restored == 12, f"도감에 올라간 12종이 used 로 자동 처리됨 (실제 {restored})")
+check(restored == len(archive_items), f"도감에 올라간 {len(archive_items)}종이 used 로 자동 처리됨 (실제 {restored})")
 check(
     all(state["episode_counts_by_theme"].get(k, 0) >= 1 for k in ["living", "kitchen", "food", "desk"]),
     "기존 4대 테마 회차가 1탄으로 복원됨",
@@ -121,7 +121,7 @@ while script3 is not None:
     )
 check(script3 is None, "미사용 상품이 없으면 None 을 반환 (used 리셋 후 재업로드하지 않음)")
 check(
-    [s.topic.split()[0] for s in remaining_scripts] == ["청소", "한파"],
+    [s.topic.split()[0] for s in remaining_scripts] == ["한파", "세탁·의류관리", "숙면"],
     f"남은 테마가 차례로 소진됨 ({[s.topic for s in remaining_scripts]})",
 )
 total_pool = sum(len(t["products"]) for t in THEMES.values())
@@ -191,10 +191,10 @@ check(
 case("8. 도감(history.json) 정합성 — 미게시 상품 미리 올리지 않음")
 local_history = json.loads(publish_guard.LOCAL_ARCHIVE_FILE.read_text(encoding="utf-8"))
 clean = web_updater.sanitize_history(local_history)
-check(len(clean) == 12, f"기존 게시분 12종 유지 (실제 {len(clean)})")
+check(len(clean) == len(local_history), f"로컬 도감 사본 게시분 {len(local_history)}종 유지 (실제 {len(clean)})")
 check(
-    not any(x["item_id"].startswith(("bath_", "car_")) for x in clean),
-    "아직 게시하지 않은 욕실·차량 상품은 도감에 포함되지 않음",
+    not any(x["item_id"].startswith(("bath_", "car_", "laundry_", "sleep_")) for x in clean),
+    "아직 게시하지 않은 욕실·차량·세탁·숙면 상품은 도감에 포함되지 않음",
 )
 check(web_updater.theme_key_for_item("bath_slippers") == "bath", "새 테마 카테고리 매핑 정상")
 html = web_updater.generate_html("테스트", [], clean)

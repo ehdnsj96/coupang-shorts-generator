@@ -477,6 +477,120 @@ THEMES: Dict[str, dict] = {
                 coupang_url="https://www.coupang.com/vp/products/9247026267?itemId=20571923542&vendorItemId=87647349184&lptag=AF7086198"
             )
         ]
+    },
+
+    "laundry": {
+        "theme_name": "세탁·의류관리 끝판왕",
+        "hook_title": "니트 보풀부터 셔츠 구김까지\n세탁·의류관리 꿀템 TOP 3!",
+        "hook_voice": "겨울 니트 보풀에 셔츠 구김, 실내 빨래까지 아직도 그냥 참고 계셨나요? 옷장 관리가 확 쉬워지는 쿠팡 세탁·의류관리 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "니트 보풀, 그냥 입고 다니셨죠?",
+        "hook_caption2": "옷장 관리 확 쉬워지는 꿀템 3가지!",
+        "hook_image": str(assets / "laundry_lint.png"),
+        "hashtags": ["#의류관리", "#보풀제거기", "#스팀다리미", "#빨래건조대", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="laundry_lint",
+                title="필립스 보풀제거기, GC-026, 블루",
+                header_badge="필립스 보풀제거기",
+                discount="57% 할인",
+                price="10,610원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 42,139)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="니트·코트 보풀 3초 만에 싹!",
+                caption2="후기 4만 개 넘은 필립스 정품",
+                voice_script="첫 번째는 필립스 보풀제거기입니다. 니트나 코트에 올라온 보풀도 문지르면 삼 초 만에 싹 사라져서, 비싼 옷도 새것처럼 되살아납니다.",
+                image_path=str(assets / "laundry_lint.png"),
+                coupang_url="https://www.coupang.com/vp/products/4947594003?itemId=6529631478&vendorItemId=91289787989&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="laundry_steamer",
+                title="홈플래닛 핸디형 스탠드 스팀다리미, MW-801",
+                header_badge="핸디형 스팀다리미",
+                discount="54% 할인",
+                price="26,990원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 52,935)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="옷걸이에 건 채로 구김 1분 컷!",
+                caption2="다림판 없이도 셔츠가 쫙 펴져요",
+                voice_script="두 번째는 홈플래닛 핸디형 스탠드 스팀다리미입니다. 옷걸이에 걸어둔 채로 쓱쓱 켜기만 하면 셔츠 구김이 일 분 만에 펴져서, 아침 출근 준비가 훨씬 빨라져요.",
+                image_path=str(assets / "laundry_steamer.png"),
+                coupang_url="https://www.coupang.com/vp/products/310080038?itemId=977484067&vendorItemId=5392665218&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="laundry_rack",
+                title="코멧 홈 접이식 대형 빨래건조대, 그레이, 1개",
+                header_badge="접이식 대형 건조대",
+                discount="33% 할인",
+                price="15,930원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 22,477)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="실내건조 빨래도 하루면 뽀송!",
+                caption2="안 쓸 땐 접어서 틈새 수납",
+                voice_script="세 번째는 코멧 홈 접이식 대형 빨래건조대입니다. 빨래를 넓게 펼 수 있어서 실내에서도 하루면 뽀송하게 마르고, 안 쓸 때는 접어서 틈새에 세워둘 수 있어요.",
+                image_path=str(assets / "laundry_rack.png"),
+                coupang_url="https://www.coupang.com/vp/products/7180955044?itemId=18110930549&vendorItemId=85262569120&lptag=AF7086198"
+            )
+        ]
+    },
+
+    "sleep": {
+        "theme_name": "숙면 부르는 침실 꿀템",
+        "hook_title": "뒤척이다 새벽 3시\n숙면 부르는 침실 꿀템 TOP 3!",
+        "hook_voice": "누웠는데 자꾸 뒤척이고 새벽에 자꾸 깨시죠? 목부터 빛까지 잠을 방해하는 것들을 한 번에 잡아주는 쿠팡 숙면 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "누우면 뒤척이고 새벽에 깨시죠?",
+        "hook_caption2": "잠을 부르는 침실 꿀템 3가지!",
+        "hook_image": str(assets / "sleep_pillow.png"),
+        "hashtags": ["#숙면꿀템", "#경추베개", "#암막커튼", "#수면안대", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="sleep_pillow",
+                title="코멧 홈 메모리폼 경추베개, 그레이, 1개",
+                header_badge="메모리폼 경추베개",
+                discount="54% 할인",
+                price="8,990원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 25,580)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="목이 안 꺾이는 높이 그대로!",
+                caption2="메모리폼이 목·어깨를 받쳐줘요",
+                voice_script="첫 번째는 코멧 홈 메모리폼 경추베개입니다. 목이 꺾이지 않는 높이로 어깨까지 받쳐줘서, 아침마다 목이 뻐근했던 분들이 특히 좋아하는 베개예요.",
+                image_path=str(assets / "sleep_pillow.png"),
+                coupang_url="https://www.coupang.com/vp/products/5314973223?itemId=20129056696&vendorItemId=87223184831&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="sleep_curtain",
+                title="코멧 홈 단열 아일렛 암막 커튼, 차콜 그레이, 135x170cm, 1장",
+                header_badge="단열 암막커튼",
+                discount="59% 할인",
+                price="7,990원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 81,312)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="가로등 빛 완벽 차단, 낮잠도 꿀잠!",
+                caption2="후기 8만 개 넘은 스테디셀러",
+                voice_script="두 번째는 코멧 홈 단열 암막커튼입니다. 가로등이나 아침 햇살을 확 막아줘서 방이 완전히 어두워지고, 단열까지 돼서 겨울에도 덜 추워요.",
+                image_path=str(assets / "sleep_curtain.png"),
+                coupang_url="https://www.coupang.com/vp/products/180352941?itemId=536034204&vendorItemId=84147368736&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="sleep_mask",
+                title="닥터김강 입체 4D 수면안대, 블랙, FREE",
+                header_badge="입체 4D 수면안대",
+                discount="19% 할인",
+                price="7,900원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 12,645)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="눈 안 눌리는 입체형, 빛 차단 끝!",
+                caption2="낮잠·여행·비행기 필수템",
+                voice_script="세 번째는 닥터김강 입체 4D 수면안대입니다. 눈을 누르지 않는 입체형이라 속눈썹 하나 안 눌리고 빛은 완벽하게 막아줘서, 낮잠이나 여행 갈 때 특히 좋아요.",
+                image_path=str(assets / "sleep_mask.png"),
+                coupang_url="https://www.coupang.com/vp/products/7709524347?itemId=20662396489&vendorItemId=87735082174&lptag=AF7086198"
+            )
+        ]
     }
 }
 

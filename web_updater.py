@@ -112,6 +112,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         "car": ("차량·운전", "🚗"),
         "cleaning": ("청소·수납", "🧹"),
         "winter": ("겨울·방한", "🧣"),
+        "laundry": ("세탁·의류", "🧺"),
+        "sleep": ("숙면·침실", "🌙"),
     }
 
     # 동영상 테마별 그룹 빌드 (카테고리가 늘어나면 이 목록만 확장하면 된다)
@@ -124,6 +126,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         ("car", "🚗 차량·운전", "🚗 차 안 리셋 꿀템 TOP 3"),
         ("cleaning", "🧹 청소·수납", "🧹 청소 끝판왕 TOP 3"),
         ("winter", "🧣 겨울·방한", "🧣 한파 방한 필수템 TOP 3"),
+        ("laundry", "🧺 세탁·의류", "🧺 세탁·의류관리 끝판왕 TOP 3"),
+        ("sleep", "🌙 숙면·침실", "🌙 숙면 부르는 침실 꿀템 TOP 3"),
     ]
 
     section_blocks = []
@@ -620,6 +624,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         <button class="pill-btn" data-filter="car">🚗 차량·운전</button>
         <button class="pill-btn" data-filter="cleaning">🧹 청소·수납</button>
         <button class="pill-btn" data-filter="winter">🧣 겨울·방한</button>
+        <button class="pill-btn" data-filter="laundry">🧺 세탁·의류</button>
+        <button class="pill-btn" data-filter="sleep">🌙 숙면·침실</button>
       </div>
     </div>
 
@@ -732,7 +738,7 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
 
     // URL Hash support (#kitchen, #living, #food, #desk)
     const hash = window.location.hash.replace("#", "");
-    if (hash && ["kitchen", "living", "food", "desk", "bath", "car"].includes(hash)) {{
+    if (hash && ["kitchen", "living", "food", "desk", "bath", "car", "cleaning", "winter", "laundry", "sleep"].includes(hash)) {{
       const targetBtn = document.querySelector(`.pill-btn[data-filter="${{hash}}"]`);
       if (targetBtn) {{
         targetBtn.click();
