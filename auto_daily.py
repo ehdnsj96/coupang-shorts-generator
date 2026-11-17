@@ -1,12 +1,9 @@
 import argparse
 import copy
 import json
-import os
 import sys
 import io
 import time
-import urllib.parse
-import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -58,71 +55,10 @@ def save_state(state: dict):
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
-def send_video_to_telegram(video_path: Path, caption: str) -> bool:
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "9156774396:AAFJqnKnvHVdy1nYOesY1nn9QQuqn7oEHo0")
-    channel_id = os.getenv("TELEGRAM_CHANNEL", "@ym_hotdeal")
-
-    if not bot_token or not channel_id:
-        print("[Telegram] 봇 토큰 또는 채널 ID가 설정되지 않아 건너뜁니다.")
-        return False
-
-    url = f"https://api.telegram.org/bot{bot_token}/sendVideo"
-    print(f"📲 텔레그램 채널({channel_id})로 영상 자동 전송 중...")
-
-    try:
-        import mimetypes
-        import ssl
-
-        boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
-        data = []
-
-        def add_field(name, value):
-            data.append(f"--{boundary}".encode("utf-8"))
-            data.append(f'Content-Disposition: form-data; name="{name}"'.encode("utf-8"))
-            data.append(b"")
-            data.append(str(value).encode("utf-8"))
-
-        def add_file(name, filepath):
-            filename = os.path.basename(filepath)
-            mimetype = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
-            data.append(f"--{boundary}".encode("utf-8"))
-            data.append(f'Content-Disposition: form-data; name="{name}"; filename="{filename}"'.encode("utf-8"))
-            data.append(f"Content-Type: {mimetype}".encode("utf-8"))
-            data.append(b"")
-            with open(filepath, "rb") as f:
-                data.append(f.read())
-
-        add_field("chat_id", channel_id)
-        add_field("caption", caption[:1024])
-        add_field("supports_streaming", "true")
-        add_file("video", video_path)
-
-        data.append(f"--{boundary}--".encode("utf-8"))
-        data.append(b"")
-        body = b"\r\n".join(data)
-
-        req = urllib.request.Request(url, data=body)
-        req.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
-
-        ctx = ssl._create_unverified_context()
-        with urllib.request.urlopen(req, context=ctx, timeout=60) as response:
-            res = json.loads(response.read().decode())
-            if res.get("ok"):
-                print("✅ 텔레그램 영상 전송 성공!")
-                return True
-            else:
-                print(f"❌ 텔레그램 전송 실패: {res}")
-                return False
-    except Exception as e:
-        print(f"⚠️ 텔레그램 전송 중 오류 발생: {e}")
-        return False
-
-
 def run_daily_job(
     slot_id: Optional[str] = None,
     force: bool = False,
     theme: str = "bright_room_minimal",
-    send_telegram: bool = True,
     upload_youtube: bool = False,
     dry_run: bool = False
 ) -> Optional[Path]:
@@ -266,18 +202,18 @@ def run_daily_job(
     print(caption_text)
     print("\n-------------------------------------------------------")
 
-    # 텔레그램 채널로 전송 (dry_run 이면 건너뜀)
-    if send_telegram and not dry_run:
-        send_video_to_telegram(output_video_path, caption_text)
-
     # 모바일 웹 링크 페이지(GitHub Pages) 자동 갱신 — 실제 게시된 영상만 도감에 올린다
+    # (유튜브 업로드가 끝나지 않은 회차를 도감에 먼저 올리면 링크가 살아있는 영상이 없어진다)
     if selected_script.items and not dry_run:
-        print("\n🌐 모바일 링크 페이지(GitHub Pages) 자동 갱신 중...")
-        try:
-            update_link_page(theme_name=selected_script.topic, items=selected_script.items, auto_push=not dry_run)
-            print("✅ 모바일 웹페이지 최신 꿀템 링크 자동 반영 완료!")
-        except Exception as e:
-            print(f"⚠️ 모바일 웹페이지 갱신 중 오류: {e}")
+        if uploader.is_configured() and not youtube_url:
+            print("\n🌐 유튜브 업로드가 완료되지 않아 도감 갱신을 건너뜁니다(게시분만 반영).")
+        else:
+            print("\n🌐 모바일 링크 페이지(GitHub Pages) 자동 갱신 중...")
+            try:
+                update_link_page(theme_name=selected_script.topic, items=selected_script.items, auto_push=not dry_run)
+                print("✅ 모바일 웹페이지 최신 꿀템 링크 자동 반영 완료!")
+            except Exception as e:
+                print(f"⚠️ 모바일 웹페이지 갱신 중 오류: {e}")
 
     # 상태 업데이트
     if "completed_slots" not in state:
@@ -313,7 +249,7 @@ def run_daily_job(
     return output_video_path
 
 
-def daemon_loop(slots: List[int] = DEFAULT_SLOTS, theme: str = "bright_room_minimal", send_telegram: bool = True, upload_youtube: bool = False, dry_run: bool = False):
+def daemon_loop(slots: List[int] = DEFAULT_SLOTS, theme: str = "bright_room_minimal", upload_youtube: bool = False, dry_run: bool = False):
     slot_desc = ", ".join([f"{h:02d}:00" for h in sorted(slots)])
     print(f"🕒 데일리 쇼츠 하루 3회 무인 자동화 백그라운드 데몬 가동 중...")
     print(f"⏰ 지정된 슬롯 시각: 매일 [{slot_desc}] 총 {len(slots)}회 자동 생성 및 업로드")
@@ -333,7 +269,7 @@ def daemon_loop(slots: List[int] = DEFAULT_SLOTS, theme: str = "bright_room_mini
                 # 오늘 완료된 슬롯 수 계산
                 today_done = [s for s in completed_slots if s.startswith(today_str)]
                 print(f"\n[알림] ⏰ {current_hour:02d}:00 슬롯 도달! (오늘 {len(today_done) + 1}/{len(slots)}번째 영상 생성 시작)")
-                run_daily_job(slot_id=slot_id, force=False, theme=theme, send_telegram=send_telegram, upload_youtube=upload_youtube, dry_run=dry_run)
+                run_daily_job(slot_id=slot_id, force=False, theme=theme, upload_youtube=upload_youtube, dry_run=dry_run)
 
         time.sleep(60)
 
@@ -344,14 +280,12 @@ def main():
     parser.add_argument("--batch", type=int, default=0, help="한 번에 연속 N개 영상 일괄 생성 (예: --batch 3)")
     parser.add_argument("--force", action="store_true", help="현재 슬롯이 이미 완료되었어도 강제 재실행")
     parser.add_argument("--theme", default="bright_room_minimal", help="디자인 테마")
-    parser.add_argument("--no-telegram", action="store_true", help="텔레그램 전송 건너뛰기")
     parser.add_argument("--youtube", action="store_true", help="생성 완료 후 YouTube Data API로 자동 업로드")
     parser.add_argument("--daemon", action="store_true", help="하루 3회 지정 슬롯에 자동 실행하는 데몬 모드")
-    parser.add_argument("--dry-run", action="store_true", help="생성만 하고 유튜브 업로드·텔레그램 발송·도감 푸시는 하지 않음(테스트용)")
+    parser.add_argument("--dry-run", action="store_true", help="생성만 하고 유튜브 업로드·도감 푸시는 하지 않음(테스트용)")
     parser.add_argument("--slots", type=int, nargs="+", default=DEFAULT_SLOTS, help="실행 시각 슬롯 목록 (기본: 8 12 18)")
 
     args = parser.parse_args()
-    send_telegram = not args.no_telegram
     dry_run = args.dry_run
 
     if args.batch > 0:
@@ -360,14 +294,14 @@ def main():
             now = datetime.now()
             batch_slot_id = f"batch_{now.strftime('%Y%m%d_%H%M%S')}_{i+1}"
             print(f"\n>>> [배치 {i+1}/{args.batch}] 생성 시작 <<<")
-            run_daily_job(slot_id=batch_slot_id, force=True, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube, dry_run=dry_run)
+            run_daily_job(slot_id=batch_slot_id, force=True, theme=args.theme, upload_youtube=args.youtube, dry_run=dry_run)
             if i < args.batch - 1:
                 time.sleep(2)
         print(f"\n🎉 총 {args.batch}개 영상 일괄 배치 제작 완료!")
     elif args.daemon:
-        daemon_loop(slots=args.slots, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube, dry_run=dry_run)
+        daemon_loop(slots=args.slots, theme=args.theme, upload_youtube=args.youtube, dry_run=dry_run)
     else:
-        run_daily_job(force=args.force or args.now, theme=args.theme, send_telegram=send_telegram, upload_youtube=args.youtube, dry_run=dry_run)
+        run_daily_job(force=args.force or args.now, theme=args.theme, upload_youtube=args.youtube, dry_run=dry_run)
 
 
 if __name__ == "__main__":

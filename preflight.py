@@ -4,10 +4,12 @@
 생성/업로드를 차단한다.
 
 ① 모든 슬라이드 이미지 파일이 실제로 존재하는가
-② 각 상품의 쿠팡 링크에 파트너스 태그(lptag=AF7086198)가 들어 있는가
+② 각 상품의 쿠팡 링크가 파트너스 태그(lptag=AF7086198)를 포함한 '실제 상품 상세 URL' 인가
+   (검색 결과 페이지 /np/search 는 무조건 차단한다)
 ③ 영상 속 제품 3종이 설명란·슬라이드와 1:1 로 정확히 매칭되는가
 """
 
+import re
 from pathlib import Path
 from typing import List, Tuple
 
@@ -16,6 +18,56 @@ from models import ShortsScript
 
 EXPECTED_ITEM_COUNT = 3
 REQUIRED_LPTAG = f"lptag={config.COUPANG_TRACKING_ID}"
+
+# 검색 결과 페이지로 보내는 URL 조각 — 상품 1:1 매칭이 불가능하므로 무조건 차단
+SEARCH_URL_PATTERNS = (
+    "/np/search",
+    "search?q=",
+    "/np/v2/search",
+    "search.do",
+    "/np/category",
+)
+
+# 실제 상품 상세 페이지로 인정하는 URL 형태
+PRODUCT_URL_PATTERNS = (
+    "/vp/products/",
+    "link.coupang.com/",
+)
+
+_VP_PRODUCT_RE = re.compile(r"/vp/products/\d+")
+_ITEM_ID_RE = re.compile(r"[?&]itemId=\d+")
+
+
+def check_coupang_url(url: str) -> List[str]:
+    """쿠팡 링크가 '검색 페이지'가 아닌 '실제 상품 상세 URL' 인지 검사한다."""
+    url = (url or "").strip()
+    if not url:
+        return ["쿠팡 링크가 비어 있습니다."]
+
+    problems: List[str] = []
+
+    if any(p in url for p in SEARCH_URL_PATTERNS):
+        problems.append(f"검색 결과 페이지 링크는 사용할 수 없습니다(상품 1:1 매칭 불가) → {url}")
+        return problems
+
+    # 파트너스 단축 링크(link.coupang.com/a/...)는 내부에 lptag 를 품고 상품 상세로 리다이렉트된다
+    if url.startswith("https://link.coupang.com/") or url.startswith("http://link.coupang.com/"):
+        return problems
+
+    if REQUIRED_LPTAG not in url:
+        problems.append(f"쿠팡 링크에 {REQUIRED_LPTAG} 가 없습니다 → {url}")
+
+    if not any(p in url for p in PRODUCT_URL_PATTERNS):
+        problems.append(f"상품 상세 URL(/vp/products/ 또는 link.coupang.com/)이 아닙니다 → {url}")
+        return problems
+
+    if "/vp/products/" in url:
+        if not _VP_PRODUCT_RE.search(url):
+            problems.append(f"상품 ID(productId)가 없는 /vp/products URL 입니다 → {url}")
+        if not _ITEM_ID_RE.search(url):
+            problems.append(f"itemId 가 없는 /vp/products URL 입니다 → {url}")
+
+    return problems
 
 
 def check_episode(script: ShortsScript) -> Tuple[bool, List[str]]:
@@ -45,10 +97,9 @@ def check_episode(script: ShortsScript) -> Tuple[bool, List[str]]:
         elif img.stat().st_size <= 0:
             problems.append(f"{label}: 이미지 파일이 0바이트입니다 → {item.image_path}")
 
-        # ② 쿠팡 파트너스 링크 확인
-        url = item.coupang_url or ""
-        if REQUIRED_LPTAG not in url:
-            problems.append(f"{label}: 쿠팡 링크에 {REQUIRED_LPTAG} 가 없습니다 → {url or '(빈 링크)'}")
+        # ② 쿠팡 링크 확인 (검색 페이지 차단 + 실제 상품 상세 URL + lptag)
+        for problem in check_coupang_url(item.coupang_url or ""):
+            problems.append(f"{label}: {problem}")
 
     # 슬라이드 구성 및 이미지 매칭
     slides = list(script.slides or [])

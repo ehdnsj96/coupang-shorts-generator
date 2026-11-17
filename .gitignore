@@ -13,3 +13,6 @@ daily_state.json
 
 # Sub-repo git dir
 web/.git/
+
+# 원본 상품 이미지 백업
+assets/_backup_*/

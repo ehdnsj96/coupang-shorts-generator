@@ -52,13 +52,12 @@ class FakeVideo:
         return True
 
 
-calls = {"web": 0, "telegram": 0, "upload": 0}
+calls = {"web": 0, "upload": 0}
 
 auto_daily.SlideRenderer = FakeRenderer
 auto_daily.VoiceGenerator = FakeVoice
 auto_daily.VideoBuilder = FakeVideo
 auto_daily.update_link_page = lambda **kw: calls.__setitem__("web", calls["web"] + 1) or True
-auto_daily.send_video_to_telegram = lambda *a, **kw: calls.__setitem__("telegram", calls["telegram"] + 1) or True
 
 
 class SpyUploader:
@@ -84,12 +83,11 @@ seed = {"completed_slots": [], "history": []}
 seed = publish_guard.reconcile_state_with_archive(seed, archive_items)
 tmp_state.write_text(json.dumps(seed, ensure_ascii=False), encoding="utf-8")
 
-result = auto_daily.run_daily_job(slot_id="test_dryrun_01", force=True, send_telegram=True, dry_run=True)
+result = auto_daily.run_daily_job(slot_id="test_dryrun_01", force=True, dry_run=True)
 state = json.loads(tmp_state.read_text(encoding="utf-8"))
 
 check(result is not None and result.exists(), "영상 파일 생성 단계까지 도달")
 check(calls["upload"] == 0, "유튜브 업로드 호출 0회 (드라이런)")
-check(calls["telegram"] == 0, "텔레그램 전송 호출 0회 (드라이런)")
 check(calls["web"] == 0, "도감(history.json) 갱신 호출 0회 (드라이런)")
 check("bath" in state["used_items_by_theme"] and len(state["used_items_by_theme"]["bath"]) == 3, "욕실 상품 3종이 사용 처리됨")
 check("test_dryrun_01" in state["completed_slots"], "완료 슬롯 기록됨")
@@ -104,9 +102,9 @@ for theme_key, theme in THEMES.items():
     exhausted.setdefault("used_items_by_theme", {})[theme_key] = [p.item_id for p in theme["products"]]
 tmp_state.write_text(json.dumps(exhausted, ensure_ascii=False), encoding="utf-8")
 
-result2 = auto_daily.run_daily_job(slot_id="test_dryrun_02", force=True, send_telegram=False, dry_run=True)
+result2 = auto_daily.run_daily_job(slot_id="test_dryrun_02", force=True, dry_run=True)
 check(result2 is None, "새 상품이 없으면 None 반환 (생성·업로드 skip)")
-check(calls["upload"] == 0 and calls["telegram"] == 0, "skip 시에도 업로드·전송 없음")
+check(calls["upload"] == 0, "skip 시에도 업로드 없음")
 
 print("\n=== C. 사전 검증 실패 시 상품 소모 없음 ===")
 seed2 = {"completed_slots": [], "history": []}
@@ -115,7 +113,7 @@ tmp_state.write_text(json.dumps(seed2, ensure_ascii=False), encoding="utf-8")
 
 original_check = auto_daily.check_episode
 auto_daily.check_episode = lambda script: (False, ["forced preflight failure"])
-result3 = auto_daily.run_daily_job(slot_id="test_dryrun_03", force=True, send_telegram=False, dry_run=True)
+result3 = auto_daily.run_daily_job(slot_id="test_dryrun_03", force=True, dry_run=True)
 auto_daily.check_episode = original_check
 state3 = json.loads(tmp_state.read_text(encoding="utf-8"))
 

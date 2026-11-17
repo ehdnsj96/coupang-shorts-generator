@@ -128,12 +128,47 @@ class _Bad:
 
 bad_items = [copy.deepcopy(p) for p in broken.items]
 bad_items[1].image_path = str(config.ASSETS_DIR / "없는이미지.png")
-bad_items[2].coupang_url = "https://www.coupang.com/np/search?q=test"  # lptag 없음
+bad_items[2].coupang_url = "https://www.coupang.com/vp/products/6317163928?itemId=784715207&vendorItemId=4987822596"  # lptag 없음
 broken.items = bad_items
 ok3, problems3 = preflight.check_episode(broken)
 check(not ok3, "깨진 에피소드는 검증 실패로 차단됨")
 check(any("이미지 파일이 없습니다" in p for p in problems3), "누락 이미지가 지적됨")
 check(any("lptag=AF7086198" in p for p in problems3), "쿠팡 링크 lptag 누락이 지적됨")
+
+# ------------------------------------- 7-1. 검색 URL(np/search) 무조건 차단
+case("7-1. 검색 페이지 링크(np/search) 차단 — lptag 가 있어도 실패")
+search_url = "https://www.coupang.com/np/search?q=%EC%A0%84%EB%8F%99%20%EC%99%80%EC%9D%B8%EC%98%A4%ED%94%84%EB%84%88&lptag=AF7086198"
+search_problems = preflight.check_coupang_url(search_url)
+check(bool(search_problems), "검색 URL 은 문제로 판정")
+check(any("검색 결과 페이지" in p for p in search_problems), f"차단 사유가 '검색 결과 페이지' ({search_problems})")
+
+broken_search = copy.deepcopy(script)
+bs_items = [copy.deepcopy(p) for p in broken_search.items]
+bs_items[0].coupang_url = search_url
+broken_search.items = bs_items
+ok_search, problems_search = preflight.check_episode(broken_search)
+check(not ok_search, "검색 URL 이 섞인 에피소드는 사전 검증 실패")
+check(any("검색 결과 페이지" in p for p in problems_search), "사전 검증이 검색 URL 을 지적함")
+
+valid_vp = "https://www.coupang.com/vp/products/6317163928?itemId=784715207&vendorItemId=4987822596&lptag=AF7086198"
+valid_short = "https://link.coupang.com/a/iACeuVKLq8"
+check(preflight.check_coupang_url(valid_vp) == [], "실제 상품 상세 URL(/vp/products + itemId)은 통과")
+check(preflight.check_coupang_url(valid_short) == [], "파트너스 단축 링크(link.coupang.com)는 통과")
+check(preflight.check_coupang_url("https://www.coupang.com/vp/products/6317163928?lptag=AF7086198") != [], "itemId 없는 /vp/products URL 은 실패")
+check(preflight.check_coupang_url("https://www.coupang.com/vp/products/6317163928?itemId=784715207") != [], "lptag 없는 상품 URL 은 실패")
+
+case("7-2. 상품 풀 18종 전수 검사 — 검색 URL 0건 · 실제 상품 URL 18건")
+offenders = []
+for theme_key, theme in THEMES.items():
+    for prod in theme["products"]:
+        probs = preflight.check_coupang_url(prod.coupang_url)
+        if probs:
+            offenders.append((theme_key, prod.item_id, probs))
+check(not offenders, f"18종 모두 실제 상품 상세 URL (위반 {offenders if offenders else '없음'})")
+check(
+    not any("/np/search" in p.coupang_url for t in THEMES.values() for p in t["products"]),
+    "검색 URL(np/search) 잔존 0건",
+)
 
 # --------------------------------------------- 8. 도감은 게시분만 유지
 case("8. 도감(history.json) 정합성 — 미게시 상품 미리 올리지 않음")

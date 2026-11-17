@@ -46,7 +46,7 @@ THEMES: Dict[str, dict] = {
                 caption2="원룸·차량 청소 3초 컷",
                 voice_script="첫 번째는 홈플래닛 무선 핸디 청소기입니다. 책상 위 먼지나 머리카락 치울 때 무거운 청소기 꺼낼 필요 없이 삼초 만에 싹 정리돼요.",
                 image_path=str(assets / "real_vacuum.png"),
-                coupang_url="https://link.coupang.com/a/iACeuVKLq8"
+                coupang_url="https://www.coupang.com/vp/products/5234137115?itemId=7375667237&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="living_mat",
@@ -61,7 +61,7 @@ THEMES: Dict[str, dict] = {
                 caption2="세탁기로 빨아쓰는 소프트 매트",
                 voice_script="두 번째는 코멧 홈 빨아쓰는 규조토 발매트입니다. 젖은 발 올리자마자 물기를 싹 흡수하고 세탁기에도 바로 돌릴 수 있어서 천 매트 빨래 걱정이 영원히 사라집니다.",
                 image_path=str(assets / "real_mat.png"),
-                coupang_url="https://link.coupang.com/a/iACiFQU8Oq"
+                coupang_url="https://www.coupang.com/vp/products/6989053316?itemId=17099465335&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="living_trashcan",
@@ -76,7 +76,7 @@ THEMES: Dict[str, dict] = {
                 caption2="원룸 냄새·벌레 완벽 차단",
                 voice_script="세 번째는 코멧 모션인식 센서 휴지통입니다. 손만 갖다 대면 알아서 열리고 닫혀서 냄새랑 벌레까지 완벽하게 차단해 줘요.",
                 image_path=str(assets / "real_trashcan.png"),
-                coupang_url="https://link.coupang.com/a/iACmJ9LnZQ"
+                coupang_url="https://www.coupang.com/vp/products/9725911694?itemId=29104988493&lptag=AF7086198"
             )
         ]
     },
@@ -92,48 +92,48 @@ THEMES: Dict[str, dict] = {
         "products": [
             ProductItem(
                 item_id="kitchen_opener",
-                title="전동 원터치 자동 오프너",
+                title="벨라쿠진 전동 와인 오프너",
                 header_badge="원터치 전동 오프너",
-                discount="30% 특가",
-                price="15,900원",
+                discount="쿠폰할인",
+                price="15,580원",
                 tag="로켓배송",
-                card_badge_left="★ 4.9 (후기 2,300개)",
+                card_badge_left="★ 5.0 (후기 798)",
                 card_badge_right="[댓글 01번 링크]",
                 caption1="버튼 하나로 코르크 자동 오픈!",
                 caption2="단단한 와인 코르크 2초 컷",
                 voice_script="첫 번째는 전동 원터치 자동 오프너입니다. 꽉 닫힌 코르크도 버튼 한 번만 누르면 힘들이지 않고 2초 만에 쏙 열립니다.",
                 image_path=str(assets / "kitchen_opener.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%A0%84%EB%8F%99%20%EC%99%80%EC%9D%B8%EC%98%A4%ED%94%84%EB%84%88&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/1796526368?itemId=3056347060&vendorItemId=71044341298&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="kitchen_drain",
-                title="항균 실리콘 배수구 커버",
+                title="코멧 홈 냄새차단 실리콘 배수구 커버 20 x 20 cm",
                 header_badge="실리콘 배수구 거름망",
-                discount="25% 특가",
-                price="8,900원",
-                tag="1+1 세트",
-                card_badge_left="★ 4.8 (후기 5,100개)",
+                discount="2개입 특가",
+                price="3,800원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 6,894)",
                 card_badge_right="[댓글 02번 링크]",
                 caption1="음식물 찌꺼기 쏙 버리기!",
                 caption2="싱크대 냄새·물때 걱정 제로",
                 voice_script="두 번째는 항균 실리콘 배수구 커버입니다. 뒤집어서 툭 털어내면 음식물 쓰레기가 싹 떨어져서 손에 더러운 물 묻힐 필요가 없어요.",
                 image_path=str(assets / "kitchen_drain.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%ED%95%AD%EA%B7%A0%20%EC%8B%A4%EB%A6%AC%EC%BD%98%20%EB%B0%B0%EC%88%98%EA%B5%AC%20%EC%BB%A4%EB%B2%84&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/7702601317?itemId=20627342844&vendorItemId=87701366382&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="kitchen_screen",
-                title="기름 튐 방지 미세망 커버",
+                title="4BNK 스테인레스 심플 후라이팬 덮개 32cm",
                 header_badge="스테인리스 기름방패",
-                discount="32% 특가",
-                price="12,500원",
+                discount="BEST AWARDS",
+                price="8,010원",
                 tag="로켓배송",
-                card_badge_left="★ 4.9 (후기 3,800개)",
+                card_badge_left="★ 4.5 (후기 11,138)",
                 card_badge_right="[댓글 03번 링크]",
                 caption1="삼겹살 구워도 기름 안 튐!",
                 caption2="가스레인지 청소 탈출",
                 voice_script="세 번째는 기름 튐 방지 미세망입니다. 고기나 튀김 요리할 때 덮어두기만 하면 수증기는 빠지고 기름만 완벽하게 막아줘서 청소가 끝납니다.",
                 image_path=str(assets / "kitchen_screen.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EA%B8%B0%EB%A6%84%20%ED%8A%90%20%EB%B0%A9%EC%A7%80%20%EB%AF%B8%EC%84%B8%EB%A7%9D%20%EC%BB%A4%EB%B2%84&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/6317163928?itemId=784715207&vendorItemId=4987822596&lptag=AF7086198"
             )
         ]
     },
@@ -149,48 +149,48 @@ THEMES: Dict[str, dict] = {
         "products": [
             ProductItem(
                 item_id="food_chicken",
-                title="굽네 닭가슴살 스테이크 매콤갈비맛",
+                title="굽네 오븐구이 통닭가슴살 3종 7팩 세트",
                 header_badge="오븐구이 닭가슴살",
-                discount="로켓프레시 특가",
-                price="19,900원",
-                tag="로켓프레시",
-                card_badge_left="★ 4.9 (후기 12만+)",
+                discount="로켓배송 특가",
+                price="19,400원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 1,508)",
                 card_badge_right="[프로필 01번 링크]",
                 caption1="퍽퍽함 제로! 육즙 가득 스테이크",
                 caption2="식단 관리·단백질 보충 1위",
-                voice_script="첫 번째는 굽네 닭가슴살 스테이크입니다. 퍽퍽함이 전혀 없고 육즙 가득 부드러워서 식단 관리할 때 물리지 않고 매일 먹을 수 있어요.",
+                voice_script="첫 번째는 굽네 오븐구이 통닭가슴살 세트입니다. 오리지널에 매콤바베큐, 양념갈비맛까지 일곱 팩이 들어 있어서 퍽퍽함 없이 매일 다른 맛으로 단백질 챙길 수 있어요.",
                 image_path=str(assets / "food_chicken.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EA%B5%BD%EB%84%A4%20%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4%20%EC%8A%A4%ED%85%8C%EC%9D%B4%ED%81%AC%20%EB%A7%A4%EC%BD%A4%EA%B0%88%EB%B9%84%EB%A7%9B&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/6585894149?itemId=14840190872&vendorItemId=82079461649&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="food_friedrice",
-                title="프레시지 대파 삼겹 볶음밥",
+                title="곰곰 대패삼겹 볶음밥 300g 6개",
                 header_badge="고소한 대파삼겹 볶음밥",
-                discount="로켓프레시 특가",
-                price="13,800원",
-                tag="로켓프레시",
-                card_badge_left="★ 4.8 (후기 9만+)",
+                discount="로켓배송 특가",
+                price="14,290원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 10,813)",
                 card_badge_right="[프로필 02번 링크]",
                 caption1="전자레인지 3분 뚝딱 완성!",
                 caption2="고소한 대파 기름 풍미 가득",
-                voice_script="두 번째는 프레시지 대파 삼겹 볶음밥입니다. 고소한 삼겹살과 대파 기름 풍미가 가득해서 전자레인지에 삼분만 돌리면 전문점 볶음밥 맛이 납니다.",
+                voice_script="두 번째는 곰곰 대패삼겹 볶음밥입니다. 고소한 대패삼겹과 대파 기름 풍미가 가득해서 전자레인지에 삼분만 돌리면 전문점 볶음밥 맛이 납니다.",
                 image_path=str(assets / "food_friedrice.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%ED%94%84%EB%A0%88%EC%8B%9C%EC%A7%80%20%EB%8C%80%ED%8C%8C%20%EC%82%BC%EA%B2%B9%20%EB%B3%B6%EC%9D%8C%EB%B0%A5&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/1310396683?itemId=2327020825&vendorItemId=70323614196&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="food_yogurt",
-                title="꾸덕한 수제 그릭요거트 대용량",
+                title="요빌 거품 싹 뺀 수제 그릭요거트 무가당 1kg",
                 header_badge="꾸덕함 끝판왕 그릭요거트",
                 discount="특가할인",
-                price="14,800원",
-                tag="로켓프레시",
-                card_badge_left="★ 4.9 (후기 5만+)",
+                price="20,690원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 6,973)",
                 card_badge_right="[프로필 03번 링크]",
                 caption1="치즈처럼 꾸덕한 리얼 그릭!",
                 caption2="바쁜 아침 건강한 1분 식사",
                 voice_script="세 번째는 꾸덕한 수제 그릭요거트입니다. 크림치즈처럼 진하고 꾸덕해서 꿀이나 그래놀라 얹어 먹으면 아침 식사 대용으로 최고예요.",
                 image_path=str(assets / "food_yogurt.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EA%BE%B8%EB%8D%95%ED%95%9C%20%EA%B7%B8%EB%A6%AD%EC%9A%94%EA%B1%B0%ED%8A%B8&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/7663543620?itemId=20423381605&vendorItemId=85001639216&lptag=AF7086198"
             )
         ]
     },
@@ -205,48 +205,48 @@ THEMES: Dict[str, dict] = {
         "products": [
             ProductItem(
                 item_id="desk_charger",
-                title="접이식 3in1 무선충전기",
+                title="맨큐 접이식 3in1 무선충전기",
                 header_badge="3in1 맥세이프 충전기",
-                discount="38% 특가",
-                price="28,900원",
+                discount="특가할인",
+                price="19,800원",
                 tag="로켓배송",
-                card_badge_left="★ 4.9 (후기 4,800개)",
+                card_badge_left="★ 5.0 (후기 1,397)",
                 card_badge_right="[댓글 01번 링크]",
                 caption1="폰·워치·이어폰 동시 고속충전!",
                 caption2="지저분한 충전선 한 번에 정리",
                 voice_script="첫 번째는 접이식 3in1 맥세이프 무선충전기입니다. 스마트폰, 워치, 무선이어폰까지 선 하나로 동시 충전돼서 책상이 정말 깔끔해집니다.",
                 image_path=str(assets / "desk_charger.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%A0%91%EC%9D%B4%EC%8B%9D%203in1%20%EB%AC%B4%EC%84%A0%EC%B6%A9%EC%A0%84%EA%B8%B0&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/9606479201?itemId=28678659938&vendorItemId=95683864660&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="desk_lightbar",
-                title="시력보호 모니터 조명바",
+                title="파파 LED 모니터 조명 PA-450M",
                 header_badge="모니터 스크린바 조명",
-                discount="32% 특가",
-                price="24,900원",
-                tag="눈피로 제로",
-                card_badge_left="★ 4.8 (후기 6,200개)",
+                discount="특가할인",
+                price="23,660원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 1,705)",
                 card_badge_right="[댓글 02번 링크]",
                 caption1="화면 반사 없이 책상만 밝게!",
                 caption2="장시간 모니터 봐도 눈 안 아픔",
                 voice_script="두 번째는 시력보호 모니터 조명바입니다. 모니터 위에 얹기만 하면 화면 반사 없이 책상 위만 부드럽게 비춰줘서 눈의 피로가 싹 사라집니다.",
                 image_path=str(assets / "desk_lightbar.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%8B%9C%EB%A0%A5%EB%B3%B4%ED%98%B8%20%EB%AA%A8%EB%8B%88%ED%84%B0%20%EC%A1%B0%EB%AA%85%EB%B0%94&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/2322111552?itemId=4010546523&vendorItemId=71994763312&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="desk_mouse",
-                title="무소음 인체공학 버티컬마우스",
+                title="코시 무소음 버티컬 무선마우스 M4003WL",
                 header_badge="인체공학 버티컬 마우스",
-                discount="40% 특가",
-                price="19,800원",
+                discount="특가할인",
+                price="19,500원",
                 tag="로켓배송",
-                card_badge_left="★ 4.9 (후기 5,900개)",
+                card_badge_left="★ 4.5 (후기 1,549)",
                 card_badge_right="[댓글 03번 링크]",
                 caption1="손목 꺾임 없는 편안한 각도!",
                 caption2="딸깍 소리 없는 도서관급 무소음",
                 voice_script="세 번째는 무소음 인체공학 버티컬 마우스입니다. 악수하듯 편안하게 쥐는 각도로 손목 통증을 없애주고 도서관에서도 쓸 수 있는 무소음 클릭이에요.",
                 image_path=str(assets / "desk_mouse.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EB%AC%B4%EC%86%8C%EC%9D%8C%20%EC%9D%B8%EC%B2%B4%EA%B3%B5%ED%95%99%20%EB%B2%84%ED%8B%B0%EC%BB%AC%EB%A7%88%EC%9A%B0%EC%8A%A4&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/5001481074?itemId=6686136608&vendorItemId=73979826014&lptag=AF7086198"
             )
         ]
     },
@@ -267,13 +267,13 @@ THEMES: Dict[str, dict] = {
                 discount="37% 할인",
                 price="6,290원",
                 tag="로켓배송",
-                card_badge_left="★ 5.0 (후기 2만+)",
+                card_badge_left="★ 5.0 (후기 19,968)",
                 card_badge_right="[프로필 01번 링크]",
                 caption1="수압은 세게, 물은 깨끗하게!",
                 caption2="필터 2개입 포함 6,290원",
                 voice_script="첫 번째는 코멧 홈 파워수압 필터 샤워기입니다. 수압은 세게 올려주면서 미세 필터가 물속 이물질까지 걸러줘서, 샤워하고 나면 피부가 확 달라집니다.",
                 image_path=str(assets / "bath_shower_filter.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%BD%94%EB%A9%A7%20%ED%99%88%20%ED%8C%8C%EC%9B%8C%EC%88%98%EC%95%95%20%ED%95%84%ED%84%B0%20%EC%83%A4%EC%9B%8C%EA%B8%B0&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/7178787283?itemId=18101284961&vendorItemId=85253394509&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="bath_microfilter",
@@ -282,13 +282,13 @@ THEMES: Dict[str, dict] = {
                 discount="63% 할인",
                 price="7,210원",
                 tag="로켓배송",
-                card_badge_left="★ 5.0 (후기 1.3만+)",
+                card_badge_left="★ 5.0 (후기 13,790)",
                 card_badge_right="[프로필 02번 링크]",
                 caption1="갈아주는 순간 물이 달라져요",
                 caption2="3개입이라 1년 내내 넉넉하게",
                 voice_script="두 번째는 코멧 홈 마이크로 필터 3개입입니다. 샤워기 필터는 두세 달마다 갈아줘야 하는데, 세 개들이라 일 년 내내 넉넉하게 쓸 수 있어요.",
                 image_path=str(assets / "bath_microfilter.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%BD%94%EB%A9%A7%20%ED%99%88%20%EC%83%A4%EC%9B%8C%EA%B8%B0%20%ED%97%A4%EB%93%9C%20%ED%93%A8%EC%96%B4%20%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C%20%ED%95%84%ED%84%B0&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/189592912?itemId=541466221&vendorItemId=4416600777&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="bath_slippers",
@@ -297,13 +297,13 @@ THEMES: Dict[str, dict] = {
                 discount="40% 할인",
                 price="5,900원",
                 tag="BEST AWARDS",
-                card_badge_left="★ 4.5 (후기 5만+)",
+                card_badge_left="★ 4.5 (후기 53,846)",
                 card_badge_right="[프로필 03번 링크]",
                 caption1="물기 많은 욕실 바닥 미끄럼 방지",
                 caption2="후기 5만 개 넘은 검증된 기본템",
                 voice_script="세 번째는 글랑앤 미끄럼방지 욕실화입니다. 물기 많은 욕실 바닥에서도 미끄러지지 않고, 물빠짐 구멍 덕분에 늘 뽀송하게 신을 수 있어요.",
                 image_path=str(assets / "bath_slippers.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EA%B8%80%EB%9E%91%EC%95%A4%20%EB%AF%B8%EB%81%84%EB%9F%BC%EB%B0%A9%EC%A7%80%20%EC%9A%95%EC%8B%A4%ED%99%94%20%EB%82%A8%EC%84%B1%EC%9A%A9&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/6267699231?itemId=12799889489&vendorItemId=80065914547&lptag=AF7086198"
             )
         ]
     },
@@ -324,13 +324,13 @@ THEMES: Dict[str, dict] = {
                 discount="53% 할인",
                 price="7,900원",
                 tag="로켓배송",
-                card_badge_left="★ 4.5 (후기 1.5만+)",
+                card_badge_left="★ 4.5 (후기 15,841)",
                 card_badge_right="[프로필 01번 링크]",
                 caption1="시동 걸면 은은하게 퍼지는 호텔 향",
                 caption2="2개입이라 대시보드까지 커버",
                 voice_script="첫 번째는 코코도르 우드볼 차량용 디퓨저입니다. 시동 걸자마자 호텔 라운지 향이 은은하게 퍼져서, 차에 타는 순간 기분이 확 좋아집니다.",
                 image_path=str(assets / "car_diffuser.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%BD%94%EC%BD%94%EB%8F%84%EB%A5%B4%20%EC%9A%B0%EB%93%9C%EB%B3%BC%20%EC%B0%A8%EB%9F%89%EC%9A%A9%20%EB%94%94%ED%93%A8%EC%A0%80%20%EC%9A%B0%EB%94%94%ED%98%B8%ED%85%94&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/8680115623?itemId=25183113443&vendorItemId=91885198654&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="car_waterless",
@@ -339,13 +339,13 @@ THEMES: Dict[str, dict] = {
                 discount="39% 할인",
                 price="4,200원",
                 tag="로켓배송",
-                card_badge_left="★ 4.5 (후기 4,300+)",
+                card_badge_left="★ 4.5 (후기 4,353)",
                 card_badge_right="[프로필 02번 링크]",
                 caption1="물 없이 뿌리고 닦으면 끝!",
                 caption2="세차장 줄 설 일 없어져요",
                 voice_script="두 번째는 카렉스 스마트 워터리스 카워시입니다. 물 없이 뿌리고 닦기만 하면 오염 제거부터 광택까지 한 번에 끝나서, 아파트 주차장에서도 세차가 됩니다.",
                 image_path=str(assets / "car_waterless.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EC%B9%B4%EB%A0%89%EC%8A%A4%20%EC%8A%A4%EB%A7%88%ED%8A%B8%20%EC%9B%8C%ED%84%B0%EB%A6%AC%EC%8A%A4%20%EC%B9%B4%EC%9B%8C%EC%8B%9C&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/96100031?itemId=21817928152&vendorItemId=3728392925&lptag=AF7086198"
             ),
             ProductItem(
                 item_id="car_wax",
@@ -354,13 +354,13 @@ THEMES: Dict[str, dict] = {
                 discount="베스트상품",
                 price="5,540원",
                 tag="로켓배송",
-                card_badge_left="★ 4.5 (후기 9,500+)",
+                card_badge_left="★ 4.5 (후기 9,534)",
                 card_badge_right="[프로필 03번 링크]",
                 caption1="물 묻은 차에 뿌리고 닦으면 광택",
                 caption2="왁스칠 한 번에 비 오염까지",
                 voice_script="세 번째는 불스원 하이브리드 물왁스입니다. 물 묻은 차에 그대로 뿌리고 닦기만 해도 광택이 올라와서, 왁스칠 한 번으로 한 달은 반짝입니다.",
                 image_path=str(assets / "car_wax.png"),
-                coupang_url="https://www.coupang.com/np/search?q=%EB%B6%88%EC%8A%A4%EC%9B%90%20%ED%95%98%EC%9D%B4%EB%B8%8C%EB%A6%AC%EB%93%9C%20%EB%AC%BC%EC%99%81%EC%8A%A4&lptag=AF7086198"
+                coupang_url="https://www.coupang.com/vp/products/209472308?itemId=21352632856&vendorItemId=89833893802&lptag=AF7086198"
             )
         ]
     }
