@@ -422,6 +422,116 @@ check("EVENTS sync > spawn" in proc.stdout, f"E-7 동기화 후 하위 프로세
 check("SPAWN slot=2026-11-17_08" in proc.stdout, "E-7 슬롯 ID 전달")
 check("'upload_youtube', True" in proc.stdout and "'dry_run', True" in proc.stdout, "E-7 데몬 옵션 그대로 전달")
 
+
+# =====================================================================
+# F. 미게시 회차는 도감에 올리지 않는다 (token.json 보호 + 도감 갱신 조건)
+# =====================================================================
+print("\n=== F. 유튜브 업로드 실패·미설정 시 도감 갱신 차단 ===")
+
+import contextlib
+import io as _io
+from youtube_uploader import TOKEN_FILE as UPLOADER_TOKEN_FILE
+
+gitignore_text = (BASE / ".gitignore").read_text(encoding="utf-8")
+gitignore_lines = [line.strip() for line in gitignore_text.splitlines()]
+check("token.json" in auto_daily.LOCAL_ONLY_PATHS, "F-1 LOCAL_ONLY_PATHS 에 token.json 포함 (동기화로 삭제 방지)")
+check("token.pickle" in auto_daily.LOCAL_ONLY_PATHS, "F-1 LOCAL_ONLY_PATHS 에 token.pickle 유지")
+check("token.json" in gitignore_lines, "F-2 .gitignore 에 token.json 등록")
+check(UPLOADER_TOKEN_FILE.name == "token.json", f"F-2 업로더가 실제 쓰는 토큰 파일명 ({UPLOADER_TOKEN_FILE.name})")
+
+
+class NotConfiguredUploader:
+    """인증 파일이 없는 PC (is_configured == False) 를 재현한다."""
+
+    def __init__(self, *a, **kw):
+        pass
+
+    def is_configured(self):
+        return False
+
+    def upload(self, **kw):
+        raise AssertionError("미설정 상태에서는 upload() 가 호출되면 안 된다")
+
+
+class FailingUploader:
+    """업로드를 시도했지만 실패해 URL 이 없는 상태를 재현한다."""
+
+    def __init__(self, *a, **kw):
+        pass
+
+    def is_configured(self):
+        return True
+
+    def upload(self, **kw):
+        calls["upload"] += 1
+        return None
+
+
+_saved = {
+    "uploader": auto_daily.YouTubeUploader,
+    "archive": auto_daily.load_archive_items,
+    "guard": auto_daily.collect_guard,
+    "describe": auto_daily.describe_guard,
+    "web": auto_daily.update_link_page,
+}
+auto_daily.load_archive_items = lambda *a, **k: ([], "stub")
+auto_daily.collect_guard = lambda state, *a, **k: {
+    "blocked_item_ids": set(), "published_titles": set(), "warnings": [], "sources": {}
+}
+auto_daily.describe_guard = lambda guard: "[stub guard]"
+
+
+def _fresh_state():
+    tmp_state.write_text(json.dumps({"completed_slots": [], "history": []}, ensure_ascii=False), encoding="utf-8")
+
+
+SKIP_MESSAGE = "유튜브 업로드가 완료되지 않아 도감 갱신을 건너뜁니다"
+
+try:
+    # F-3. is_configured() == False → 도감 갱신 금지 (기존 버그: 도감만 먼저 올라감)
+    _fresh_state()
+    web_before = calls["web"]
+    auto_daily.YouTubeUploader = NotConfiguredUploader
+    auto_daily.update_link_page = lambda **kw: calls.__setitem__("web", calls["web"] + 1) or True
+    out = _io.StringIO()
+    with contextlib.redirect_stdout(out):
+        res = auto_daily.run_daily_job(slot_id="test_noauth_01", force=True, dry_run=False)
+    log = out.getvalue()
+    check(res is not None, "F-3 인증 없음: 영상 생성까지는 진행")
+    check(calls["web"] == web_before, "F-3 인증 없음: 도감(history.json) 갱신 호출 0회")
+    check(SKIP_MESSAGE in log, "F-3 인증 없음: 도감 갱신 건너뜀 안내 출력")
+
+    # F-4. 업로드 시도했지만 실패(None) → 도감 갱신 금지
+    _fresh_state()
+    web_before = calls["web"]
+    auto_daily.YouTubeUploader = FailingUploader
+    out = _io.StringIO()
+    with contextlib.redirect_stdout(out):
+        res = auto_daily.run_daily_job(slot_id="test_uploadfail_01", force=True, dry_run=False)
+    log = out.getvalue()
+    check(res is not None, "F-4 업로드 실패: 영상 생성까지는 진행")
+    check(calls["web"] == web_before, "F-4 업로드 실패: 도감 갱신 호출 0회")
+    check(SKIP_MESSAGE in log, "F-4 업로드 실패: 도감 갱신 건너뜀 안내 출력")
+
+    # F-5. 업로드 성공 시에는 그대로 도감 갱신 (정상 경로 회귀 방지)
+    _fresh_state()
+    web_before = calls["web"]
+    auto_daily.YouTubeUploader = SpyUploader
+    out = _io.StringIO()
+    with contextlib.redirect_stdout(out):
+        res = auto_daily.run_daily_job(slot_id="test_uploadok_01", force=True, dry_run=False)
+    log = out.getvalue()
+    check(res is not None, "F-5 업로드 성공: 영상 생성 완료")
+    check(calls["web"] == web_before + 1, f"F-5 업로드 성공: 도감 갱신 1회 호출 (실제 {calls['web'] - web_before}회)")
+    check(SKIP_MESSAGE not in log, "F-5 업로드 성공: 건너뜀 안내 없음")
+finally:
+    auto_daily.YouTubeUploader = _saved["uploader"]
+    auto_daily.load_archive_items = _saved["archive"]
+    auto_daily.collect_guard = _saved["guard"]
+    auto_daily.describe_guard = _saved["describe"]
+    auto_daily.update_link_page = _saved["web"]
+
+
 print("\n" + "=" * 60)
 if failures:
     print(f"실패 {len(failures)}건:")

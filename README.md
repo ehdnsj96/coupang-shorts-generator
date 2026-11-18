@@ -40,7 +40,7 @@
      ② **새 파이썬 프로세스**(`auto_daily.py --now --slot <slot_id> --no-sync`)에서 1회 실행한다
      → 방금 받은 `product_pool.py`(새 테마·상품)와 모듈이 메모리에 새로 로드된다
    - 로컬 추적 파일을 직접 고쳐 ff 병합이 막히면 `git reset --hard origin/main` 으로 폴백하되,
-     `.gitignore` 대상인 `daily_state.json` · `output/` · `token.pickle` · `client_secrets.json` 은 지우지 않는다
+     `.gitignore` 대상인 `daily_state.json` · `output/` · `token.pickle` · `token.json` · `client_secrets.json` 은 지우지 않는다
      (동기화 후 실제 존재 여부까지 확인). 폴백 직전 로컬 변경분은 `output/git_sync_backup/*.patch` 로 백업
    - 네트워크·git 오류는 경고 로그만 찍고 **기존 로컬 코드로 계속 실행**한다 (무인 자동화가 멈추지 않음)
    - `python3 auto_daily.py --now` 도 시작할 때 1회 동기화하고, 코드가 갱신되면 자동으로 새 프로세스로 다시 시작한다

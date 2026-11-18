@@ -56,6 +56,7 @@ SYNC_CHILD_ENV = "COUPANG_SHORTS_SYNC_CHILD"
 LOCAL_ONLY_PATHS = (
     "daily_state.json",
     "token.pickle",
+    "token.json",
     "client_secrets.json",
     "output",
 )
@@ -109,7 +110,7 @@ def sync_repo(
       1) git fetch → 원격 최신 커밋 확인 (이미 같으면 종료)
       2) git merge --ff-only origin/main (빠른 감기)
       3) 로컬 추적 파일 변경·분기로 ff 병합이 막히면 git reset --hard origin/main 으로 폴백
-         — reset --hard 는 추적 파일만 되돌리므로 daily_state.json·output/·token.pickle 같은
+         — reset --hard 는 추적 파일만 되돌리므로 daily_state.json·output/·token.pickle·token.json 같은
            인증/상태 파일은 지워지지 않는다(사라졌는지 확인해 결과에 담는다)
 
     네트워크·git 오류는 예외를 올리지 않고 status="error" 로 돌려준다.
@@ -499,8 +500,10 @@ def run_daily_job(
 
     # 모바일 웹 링크 페이지(GitHub Pages) 자동 갱신 — 실제 게시된 영상만 도감에 올린다
     # (유튜브 업로드가 끝나지 않은 회차를 도감에 먼저 올리면 링크가 살아있는 영상이 없어진다)
+    # 업로드 설정 여부와 무관하게, 유튜브에 실제로 게시된 회차만 도감에 반영한다.
+    # (is_configured() 만 보고 넘어가면 인증 파일이 없을 때 미게시 상품이 도감에 먼저 올라간다)
     if selected_script.items and not dry_run:
-        if uploader.is_configured() and not youtube_url:
+        if not youtube_url:
             print("\n🌐 유튜브 업로드가 완료되지 않아 도감 갱신을 건너뜁니다(게시분만 반영).")
         else:
             print("\n🌐 모바일 링크 페이지(GitHub Pages) 자동 갱신 중...")

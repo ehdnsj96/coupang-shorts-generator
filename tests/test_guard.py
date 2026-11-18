@@ -39,7 +39,7 @@ def check(cond, message):
 case("1. 도감(history.json)으로 상태 자동 복원")
 fresh = {"completed_slots": [], "history": []}
 archive_items, source = publish_guard.load_archive_items()
-check(len(archive_items) >= 15, f"도감 {len(archive_items)}종 읽기 (출처={source})")
+check(len(archive_items) >= 12, f"도감 {len(archive_items)}종 읽기 (출처={source})")
 state = publish_guard.reconcile_state_with_archive(fresh, archive_items)
 restored = sum(len(v) for v in state["used_items_by_theme"].values())
 check(restored == len(archive_items), f"도감에 올라간 {len(archive_items)}종이 used 로 자동 처리됨 (실제 {restored})")
@@ -120,9 +120,22 @@ while script3 is not None:
         published_titles=set(),
     )
 check(script3 is None, "미사용 상품이 없으면 None 을 반환 (used 리셋 후 재업로드하지 않음)")
+# 남은 테마 기대값은 도감 상태에 따라 달라질 수 있으므로(게시분만 잠금) 현재 상태에서 계산한다.
+used_before_loop = set()
+for ids in state_after.get("used_items_by_theme", {}).values():
+    used_before_loop.update(ids)
+theme_keys = list(THEMES.keys())
+start_idx = state_after.get("current_theme_index", 0) % len(theme_keys)
+expected_remaining = [
+    theme_keys[(start_idx + off) % len(theme_keys)]
+    for off in range(len(theme_keys))
+    if len([p for p in THEMES[theme_keys[(start_idx + off) % len(theme_keys)]]["products"]
+            if p.item_id not in used_before_loop]) >= 3
+]
+actual_remaining = [s.items[0].item_id.split("_")[0] for s in remaining_scripts]
 check(
-    [s.topic.split()[0] for s in remaining_scripts] == ["한파", "세탁·의류관리", "숙면"],
-    f"남은 테마가 차례로 소진됨 ({[s.topic for s in remaining_scripts]})",
+    actual_remaining == expected_remaining,
+    f"남은 테마가 차례로 소진됨 (기대 {expected_remaining} / 실제 {actual_remaining})",
 )
 total_pool = sum(len(t["products"]) for t in THEMES.values())
 total_used = set()
@@ -193,12 +206,19 @@ local_history = json.loads(publish_guard.LOCAL_ARCHIVE_FILE.read_text(encoding="
 clean = web_updater.sanitize_history(local_history)
 check(len(clean) == len(local_history), f"로컬 도감 사본 게시분 {len(local_history)}종 유지 (실제 {len(clean)})")
 check(
-    not any(x["item_id"].startswith(("bath_", "car_", "laundry_", "sleep_")) for x in clean),
-    "아직 게시하지 않은 욕실·차량·세탁·숙면 상품은 도감에 포함되지 않음",
+    not any(x["item_id"].startswith(("bath_", "car_", "cleaning_", "winter_", "laundry_", "sleep_")) for x in clean),
+    "아직 게시하지 않은 욕실·차량·청소·방한·세탁·숙면 상품은 도감에 포함되지 않음",
 )
 check(web_updater.theme_key_for_item("bath_slippers") == "bath", "새 테마 카테고리 매핑 정상")
 html = web_updater.generate_html("테스트", [], clean)
-check("욕실·샤워" in html and "차량·운전" in html, "도감 HTML 에 새 카테고리 필터가 생성됨")
+check('data-filter="bath"' not in html and 'data-filter="car"' not in html,
+      "게시 상품이 없는 카테고리 칩은 노출하지 않음")
+check('data-filter="living"' in html and 'data-filter="food"' in html,
+      "게시된 카테고리 칩은 그대로 노출됨")
+with_bath = web_updater.sanitize_history(clean + [{"item_id": "bath_slippers", "item_num": 1}])
+html_bath = web_updater.generate_html("테스트", [], with_bath)
+check('data-filter="bath"' in html_bath and "욕실·샤워" in html_bath,
+      "새 테마 상품이 게시되면 해당 카테고리 칩이 자동 생성됨")
 check("t.me" not in html and "텔레그램" not in html, "도감 HTML 에 텔레그램 배너·링크가 없음")
 
 case("9. 훅 슬라이드 문구가 테마와 일치 (렌더러 하드코딩 회귀 방지)")

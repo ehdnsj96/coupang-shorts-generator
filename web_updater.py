@@ -190,6 +190,15 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
 
     catalog_count = len(history_items)
 
+    # 카테고리 칩은 실제 게시된 상품이 있는 카테고리만 노출한다
+    # (아직 영상에 올리지 않은 테마가 빈 칩으로 먼저 보이지 않도록)
+    present_categories = {x.get("category_key") for x in history_items}
+    category_pills = "\n        ".join(
+        f'<button class="pill-btn" data-filter="{cat_key}">{pill_title}</button>'
+        for cat_key, pill_title, _sec_title in categories
+        if cat_key in present_categories
+    )
+
     html = f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -616,16 +625,7 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
       </div>
       <div class="category-pills">
         <button class="pill-btn active" data-filter="all">🔥 전체 ({len(history_items)})</button>
-        <button class="pill-btn" data-filter="kitchen">🍳 주방·살림</button>
-        <button class="pill-btn" data-filter="living">🏠 자취·리빙</button>
-        <button class="pill-btn" data-filter="food">🥗 식비·간편식</button>
-        <button class="pill-btn" data-filter="desk">💻 데스크</button>
-        <button class="pill-btn" data-filter="bath">🛁 욕실·샤워</button>
-        <button class="pill-btn" data-filter="car">🚗 차량·운전</button>
-        <button class="pill-btn" data-filter="cleaning">🧹 청소·수납</button>
-        <button class="pill-btn" data-filter="winter">🧣 겨울·방한</button>
-        <button class="pill-btn" data-filter="laundry">🧺 세탁·의류</button>
-        <button class="pill-btn" data-filter="sleep">🌙 숙면·침실</button>
+        {category_pills}
       </div>
     </div>
 
