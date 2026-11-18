@@ -151,6 +151,7 @@ def collect_guard(
     local_titles: Set[str] = set(state.get("published_titles", []))
 
     archive_ids: Set[str] = set()
+    archive_items: List[Dict[str, Any]] = []
     archive_source = "skipped"
     if check_archive:
         archive_items, archive_source = load_archive_items()
@@ -168,6 +169,8 @@ def collect_guard(
     return {
         "blocked_item_ids": local_used | archive_ids,
         "published_titles": local_titles | rss_titles,
+        "rss_titles": rss_titles,
+        "archive_items": archive_items,
         "sources": {
             "local_items": len(local_used),
             "archive_items": len(archive_ids),
@@ -178,6 +181,58 @@ def collect_guard(
         },
         "warnings": warnings,
     }
+
+
+def prune_unpublished_locks(
+    state: Dict[str, Any],
+    archive_items: List[Dict[str, Any]],
+    rss_titles: Set[str],
+    rss_ok: bool,
+    archive_source: str,
+) -> Tuple[Dict[str, Any], List[str]]:
+    """유튜브에도 도감에도 없는(게시되지 않은) 회차의 로컬 잠금을 푼다.
+
+    과거 버그로 업로드가 실패한 회차가 daily_state.json 에 '사용/게시' 로 남으면
+    도감에서 되돌려도 그 테마가 영원히 건너뛰어진다. 근거(RSS 게시 제목 + 원격 도감)가
+    둘 다 정상적으로 확인된 경우에만, 그 테마의 상품이 도감에 하나도 없고 게시 제목도
+    RSS 에 없을 때 잠금을 해제한다. (한쪽이라도 조회 실패면 절대 풀지 않는다 →
+    같은 영상 재업로드 방지)
+
+    Returns: (갱신된 state, 잠금 해제된 테마 키 목록)
+    """
+    from product_pool import THEMES
+
+    if not rss_ok or archive_source != "remote":
+        return state, []
+
+    archive_ids = archive_item_ids(archive_items)
+    used_map = state.get("used_items_by_theme", {}) or {}
+    episode_map = state.get("episode_counts_by_theme", {}) or {}
+    titles: List[str] = list(state.get("published_titles", []) or [])
+
+    released: List[str] = []
+    for theme_key in list(THEMES.keys()):
+        theme_item_ids = [p.item_id for p in THEMES[theme_key]["products"]]
+        if any(iid in archive_ids for iid in theme_item_ids):
+            continue  # 도감에 올라간 상품이 있으면 게시된 회차 → 유지
+
+        max_ep = max(1, int(episode_map.get(theme_key, 0) or 0))
+        theme_titles = {normalize_title(build_episode_title(theme_key, n)) for n in range(1, max_ep + 1)}
+        if theme_titles & set(rss_titles):
+            continue  # 유튜브에 게시된 제목이 있으면 유지
+
+        if not used_map.get(theme_key) and not episode_map.get(theme_key):
+            continue  # 애초에 잠금이 없으면 건드리지 않는다
+
+        used_map.pop(theme_key, None)
+        episode_map.pop(theme_key, None)
+        titles = [t for t in titles if t not in theme_titles]
+        released.append(theme_key)
+
+    state["used_items_by_theme"] = used_map
+    state["episode_counts_by_theme"] = episode_map
+    state["published_titles"] = titles
+    return state, released
 
 
 def describe_guard(guard: Dict[str, Any]) -> str:

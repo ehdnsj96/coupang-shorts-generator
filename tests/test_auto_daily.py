@@ -102,7 +102,24 @@ for theme_key, theme in THEMES.items():
     exhausted.setdefault("used_items_by_theme", {})[theme_key] = [p.item_id for p in theme["products"]]
 tmp_state.write_text(json.dumps(exhausted, ensure_ascii=False), encoding="utf-8")
 
-result2 = auto_daily.run_daily_job(slot_id="test_dryrun_02", force=True, dry_run=True)
+# 네트워크 근거(RSS·원격 도감)를 못 쓰는 폴백 상황에서는 로컬 상태(전부 사용)를 그대로 신뢰한다
+_saved_guard = auto_daily.collect_guard
+_saved_describe = auto_daily.describe_guard
+auto_daily.collect_guard = lambda state, *a, **k: {
+    "blocked_item_ids": {i for ids in state.get("used_items_by_theme", {}).values() for i in ids},
+    "published_titles": set(state.get("published_titles", [])),
+    "rss_titles": set(),
+    "archive_items": [],
+    "sources": {"rss_ok": False, "archive_source": "local", "archive_items": 0,
+                "local_items": 0, "rss_titles": 0, "local_titles": 0},
+    "warnings": [],
+}
+auto_daily.describe_guard = lambda guard: "[stub guard]"
+try:
+    result2 = auto_daily.run_daily_job(slot_id="test_dryrun_02", force=True, dry_run=True)
+finally:
+    auto_daily.collect_guard = _saved_guard
+    auto_daily.describe_guard = _saved_describe
 check(result2 is None, "새 상품이 없으면 None 반환 (생성·업로드 skip)")
 check(calls["upload"] == 0, "skip 시에도 업로드 없음")
 
@@ -524,6 +541,48 @@ try:
     check(res is not None, "F-5 업로드 성공: 영상 생성 완료")
     check(calls["web"] == web_before + 1, f"F-5 업로드 성공: 도감 갱신 1회 호출 (실제 {calls['web'] - web_before}회)")
     check(SKIP_MESSAGE not in log, "F-5 업로드 성공: 건너뜀 안내 없음")
+
+    # F-6. 업로드 실패로 daily_state 에만 남은 회차(청소 편)는 다음 실행에서 자동으로 다시 선택된다
+    import episode_builder as _eb
+    from product_pool import THEMES as _THEMES
+
+    published_keys = ("living", "kitchen", "food", "desk")
+    archive12 = [
+        {"item_id": p.item_id, "category_key": k}
+        for k in published_keys for p in _THEMES[k]["products"]
+    ]
+    rss_titles = {_eb.normalize_title(_eb.build_episode_title(k, 1)) for k in published_keys}
+    cleaning_title = _eb.normalize_title(_eb.build_episode_title("cleaning", 1))
+    stuck_state = {
+        "completed_slots": [],
+        "history": [],
+        "used_items_by_theme": {"cleaning": ["cleaning_mop", "cleaning_magicblock", "cleaning_duster"]},
+        "episode_counts_by_theme": {"cleaning": 1},
+        "published_titles": [cleaning_title],
+        "current_theme_index": list(_THEMES.keys()).index("cleaning"),
+    }
+    tmp_state.write_text(json.dumps(stuck_state, ensure_ascii=False), encoding="utf-8")
+    auto_daily.collect_guard = lambda state, *a, **k: {
+        "blocked_item_ids": {i["item_id"] for i in archive12}
+        | set(state.get("used_items_by_theme", {}).get("cleaning", [])),
+        "published_titles": rss_titles | set(state.get("published_titles", [])),
+        "rss_titles": rss_titles,
+        "archive_items": archive12,
+        "sources": {"rss_ok": True, "archive_source": "remote", "archive_items": len(archive12),
+                    "local_items": 0, "rss_titles": len(rss_titles), "local_titles": 0},
+        "warnings": [],
+    }
+    auto_daily.YouTubeUploader = SpyUploader
+    out = _io.StringIO()
+    with contextlib.redirect_stdout(out):
+        res = auto_daily.run_daily_job(slot_id="test_unlock_01", force=True, dry_run=True)
+    log = out.getvalue()
+    unlocked_state = json.loads(tmp_state.read_text(encoding="utf-8"))
+    check("미게시 회차 잠금 해제: cleaning" in log, f"F-6 미게시 회차 잠금 해제 안내 출력")
+    check(res is not None and "청소" in log, "F-6 청소 회차가 다시 생성됨 (영구 건너뛰기 방지)")
+    check(unlocked_state.get("used_items_by_theme", {}).get("cleaning") ==
+          ["cleaning_mop", "cleaning_magicblock", "cleaning_duster"], "F-6 새로 생성된 청소 3종이 사용 처리됨")
+    check(cleaning_title in unlocked_state.get("published_titles", []), "F-6 청소 제목이 다시 잠금 처리됨")
 finally:
     auto_daily.YouTubeUploader = _saved["uploader"]
     auto_daily.load_archive_items = _saved["archive"]

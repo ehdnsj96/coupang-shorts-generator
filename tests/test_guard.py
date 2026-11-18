@@ -263,6 +263,61 @@ check(archive_src_offline == "local" and len(archive_offline) == 12, f"도감은
 check(guard_offline["sources"]["archive_items"] == 12, "폴백 후에도 도감 잠금 12종 유지")
 check("bath_shower_filter" in guard_offline["blocked_item_ids"], "로컬 상태의 사용 상품도 그대로 잠금")
 
+case("12. 미게시 회차 잠금 해제 (업로드 실패로 소모된 회차만 풀린다)")
+# 도감에는 실제 게시분 12종만, RSS 에는 게시된 4편 제목만 있는 정상 상태를 가정
+published_items = [x for x in archive_offline if x["category_key"] in ("living", "kitchen", "food", "desk")]
+published_themes = ["living", "kitchen", "food", "desk"]
+rss_published = {
+    episode_builder.normalize_title(episode_builder.build_episode_title(k, 1)) for k in published_themes
+}
+stuck = {
+    "used_items_by_theme": {
+        "cleaning": ["cleaning_mop", "cleaning_magicblock", "cleaning_duster"],
+        "winter": ["winter_handwarmer", "winter_neckwarmer", "winter_gloves"],
+    },
+    "episode_counts_by_theme": {"cleaning": 1, "winter": 1},
+    "published_titles": [
+        episode_builder.normalize_title(episode_builder.build_episode_title("cleaning", 1)),
+        episode_builder.normalize_title(episode_builder.build_episode_title("winter", 1)),
+    ],
+    "current_theme_index": list(THEMES.keys()).index("cleaning"),
+}
+reconciled = pg.reconcile_state_with_archive(copy.deepcopy(stuck), published_items)
+pruned, released = pg.prune_unpublished_locks(
+    copy.deepcopy(reconciled), published_items, rss_published, rss_ok=True, archive_source="remote"
+)
+check(released == ["cleaning", "winter"], f"도감·RSS 어디에도 없는 회차만 해제 ({released})")
+check("cleaning" not in pruned["used_items_by_theme"] and "winter" not in pruned["used_items_by_theme"],
+      "해제된 테마의 사용 상품 잠금이 사라짐")
+check(bool(pruned["used_items_by_theme"].get("living")),
+      "게시된 테마(living 등)의 사용 상품은 그대로 잠금 유지")
+check(not any("청소" in t or "한파" in t for t in pruned["published_titles"]),
+      "해제된 테마의 게시 제목 잠금도 제거됨")
+blocked_now = set(pg.archive_item_ids(published_items))
+for ids in pruned["used_items_by_theme"].values():
+    blocked_now.update(ids)
+script_clean, _ = episode_builder.get_next_dynamic_episode(
+    copy.deepcopy(pruned), blocked_item_ids=blocked_now, published_titles=set(pruned["published_titles"])
+)
+check(script_clean is not None and script_clean.topic.startswith("청소"),
+      f"잠금 해제 후 청소 회차가 다시 선택됨 (topic={script_clean.topic if script_clean else None})")
+
+# 한쪽이라도 확인 실패면 절대 풀지 않는다 (같은 영상 재업로드 방지)
+_no_rss, rel_no_rss = pg.prune_unpublished_locks(
+    copy.deepcopy(reconciled), published_items, set(), rss_ok=False, archive_source="remote"
+)
+check(rel_no_rss == [] and "cleaning" in _no_rss["used_items_by_theme"], "RSS 실패 시 잠금을 풀지 않음")
+_no_remote, rel_local = pg.prune_unpublished_locks(
+    copy.deepcopy(reconciled), published_items, rss_published, rss_ok=True, archive_source="local"
+)
+check(rel_local == [] and "cleaning" in _no_remote["used_items_by_theme"], "원격 도감 확인 실패 시 잠금을 풀지 않음")
+_rss_has, rel_rss_has = pg.prune_unpublished_locks(
+    copy.deepcopy(reconciled), published_items,
+    rss_published | {episode_builder.normalize_title(episode_builder.build_episode_title("cleaning", 1))},
+    rss_ok=True, archive_source="remote",
+)
+check(rel_rss_has == ["winter"], f"RSS 에 제목이 있으면 그 테마는 유지 ({rel_rss_has})")
+
 print("\n" + "=" * 60)
 if failures:
     print(f"실패 {len(failures)}건:")

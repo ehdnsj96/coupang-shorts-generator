@@ -26,9 +26,11 @@ from voice_generator import VoiceGenerator
 from youtube_uploader import YouTubeUploader
 from web_updater import update_link_page
 from publish_guard import (
+    archive_item_ids,
     collect_guard,
     describe_guard,
     load_archive_items,
+    prune_unpublished_locks,
     reconcile_state_with_archive,
 )
 from preflight import check_episode, format_problems
@@ -382,6 +384,24 @@ def run_daily_job(
     print(describe_guard(guard))
     for warning in guard["warnings"]:
         print(f"   · {warning}")
+
+    # 업로드 실패·인증 없음으로 '사용/게시'만 되고 유튜브에 안 올라간 회차의 잠금을 푼다.
+    # (RSS·원격 도감이 모두 정상 확인된 경우에만 → 같은 영상 재업로드 방지)
+    state, released_loose_ends = prune_unpublished_locks(
+        state,
+        guard.get("archive_items", []),
+        set(guard.get("rss_titles", set())),
+        bool(guard.get("sources", {}).get("rss_ok")),
+        guard.get("sources", {}).get("archive_source", ""),
+    )
+    if released_loose_ends:
+        print(f"🔓 미게시 회차 잠금 해제: {', '.join(released_loose_ends)} — 유튜브·도감에 게시 이력이 없어 다음 회차에서 다시 생성·업로드합니다.")
+        blocked_after = set(archive_item_ids(guard.get("archive_items", [])))
+        for ids in state.get("used_items_by_theme", {}).values():
+            blocked_after.update(ids)
+        guard["blocked_item_ids"] = blocked_after
+        guard["published_titles"] = set(state.get("published_titles", [])) | set(guard.get("rss_titles", set()))
+        save_state(state)
 
     # 다음 순번 에피소드 자동 선택 (테마 및 상품 자동 회전, 사용 상품 재사용 금지)
     state_before_select = copy.deepcopy(state)
