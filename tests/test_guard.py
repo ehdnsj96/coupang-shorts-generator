@@ -56,6 +56,7 @@ guard = {
 }
 for ids in state["used_items_by_theme"].values():
     guard["blocked_item_ids"].update(ids)
+prev_used = set(guard["blocked_item_ids"])
 
 script, state = episode_builder.get_next_dynamic_episode(
     state,
@@ -63,11 +64,22 @@ script, state = episode_builder.get_next_dynamic_episode(
     published_titles=guard["published_titles"],
 )
 check(script is not None, "미사용 상품이 있으므로 새 에피소드가 생성됨")
-check(script is not None and script.topic.startswith("욕실·샤워 리셋"), f"첫 새 회차는 욕실 테마 (topic={script.topic if script else None})")
 check(script is not None and len(script.items) == 3, "상품 3종으로 구성됨")
+selected_theme = None
+if script is not None:
+    prefix = script.items[0].item_id.split("_")[0]
+    selected_theme = next((k for k in THEMES if k == prefix), None)
 check(
-    script is not None and all(p.item_id.startswith("bath_") for p in script.items),
-    f"선택 상품: {[p.item_id for p in script.items] if script else None}",
+    selected_theme is not None and all(p.item_id.startswith(f"{selected_theme}_") for p in script.items),
+    f"한 테마의 상품만 선택됨 (theme={selected_theme}, 상품={[p.item_id for p in script.items] if script else None})",
+)
+check(
+    all(p.item_id not in prev_used for p in (script.items if script else [])),
+    "이미 쓴 상품은 다시 쓰지 않음",
+)
+check(
+    selected_theme is not None and script.topic.startswith(THEMES[selected_theme]["theme_name"]),
+    f"회차 제목이 테마명과 일치 (topic={script.topic if script else None}, theme={selected_theme})",
 )
 
 # ------------------------------------------------------------- 3. 사전 검증 통과
@@ -99,9 +111,13 @@ script2, state_after = episode_builder.get_next_dynamic_episode(
     blocked_item_ids=guard["blocked_item_ids"],
     published_titles=published,
 )
-check(script2 is not None and script2.topic.startswith("차 안 리셋"), f"욕실 회차는 건너뛰고 차량 테마로 (topic={script2.topic if script2 else None})")
+check(
+    script2 is not None
+    and (selected_theme is None or script2.topic.split(" ")[0] != THEMES[selected_theme]["theme_name"].split(" ")[0]),
+    f"이미 게시된 회차는 건너뛰고 다른 테마로 (topic={script2.topic if script2 else None})",
+)
 ok2, problems2 = preflight.check_episode(script2)
-check(ok2, f"차량 회차 사전 검증 통과 {problems2 if problems2 else ''}")
+check(ok2, f"다음 회차 사전 검증 통과 {problems2 if problems2 else ''}")
 
 # ------------------------------------------- 6. 모든 상품 소진 시 None 반환
 case("6. 모든 테마 소진 시 None (기존 무한 중복 버그 회귀 테스트)")
@@ -206,13 +222,17 @@ local_history = json.loads(publish_guard.LOCAL_ARCHIVE_FILE.read_text(encoding="
 clean = web_updater.sanitize_history(local_history)
 check(len(clean) == len(local_history), f"로컬 도감 사본 게시분 {len(local_history)}종 유지 (실제 {len(clean)})")
 check(
-    not any(x["item_id"].startswith(("bath_", "car_", "cleaning_", "winter_", "laundry_", "sleep_")) for x in clean),
-    "아직 게시하지 않은 욕실·차량·청소·방한·세탁·숙면 상품은 도감에 포함되지 않음",
+    {x["item_id"] for x in clean} <= {x["item_id"] for x in local_history},
+    "도감에 없는 미게시 상품을 새로 채우지 않음",
 )
 check(web_updater.theme_key_for_item("bath_slippers") == "bath", "새 테마 카테고리 매핑 정상")
 html = web_updater.generate_html("테스트", [], clean)
-check('data-filter="bath"' not in html and 'data-filter="car"' not in html,
-      "게시 상품이 없는 카테고리 칩은 노출하지 않음")
+present_keys = {x.get("category_key") for x in clean}
+missing_keys = [k for k in THEMES if k not in present_keys]
+check(
+    all(f'data-filter="{k}"' not in html for k in missing_keys),
+    f"게시 상품이 없는 카테고리 칩은 노출하지 않음 ({missing_keys})",
+)
 check('data-filter="living"' in html and 'data-filter="food"' in html,
       "게시된 카테고리 칩은 그대로 노출됨")
 with_bath = web_updater.sanitize_history(clean + [{"item_id": "bath_slippers", "item_num": 1}])
@@ -259,8 +279,9 @@ guard_offline = pg.collect_guard({"used_items_by_theme": {"bath": ["bath_shower_
 pg.RSS_URL, pg.REMOTE_ARCHIVE_URL = _orig_rss, _orig_archive
 
 check(rss_ok_offline is False, "RSS 실패를 오류 없이 감지")
-check(archive_src_offline == "local" and len(archive_offline) == 12, f"도감은 로컬 사본으로 폴백 ({archive_src_offline}, {len(archive_offline)}종)")
-check(guard_offline["sources"]["archive_items"] == 12, "폴백 후에도 도감 잠금 12종 유지")
+_local_count = len(json.loads(publish_guard.LOCAL_ARCHIVE_FILE.read_text(encoding="utf-8")))
+check(archive_src_offline == "local" and len(archive_offline) == _local_count, f"도감은 로컬 사본으로 폴백 ({archive_src_offline}, {len(archive_offline)}종)")
+check(guard_offline["sources"]["archive_items"] == _local_count, f"폴백 후에도 도감 잠금 {_local_count}종 유지")
 check("bath_shower_filter" in guard_offline["blocked_item_ids"], "로컬 상태의 사용 상품도 그대로 잠금")
 
 case("12. 미게시 회차 잠금 해제 (업로드 실패로 소모된 회차만 풀린다)")

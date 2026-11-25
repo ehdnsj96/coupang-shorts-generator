@@ -81,17 +81,34 @@ print("\n=== A. 신규 회차 1회 드라이런 (업로드·전송·도감푸시
 archive_items, _ = publish_guard.load_archive_items()
 seed = {"completed_slots": [], "history": []}
 seed = publish_guard.reconcile_state_with_archive(seed, archive_items)
+seed_used = {k: set(v) for k, v in seed.get("used_items_by_theme", {}).items()}
 tmp_state.write_text(json.dumps(seed, ensure_ascii=False), encoding="utf-8")
 
 result = auto_daily.run_daily_job(slot_id="test_dryrun_01", force=True, dry_run=True)
 state = json.loads(tmp_state.read_text(encoding="utf-8"))
 
+# 어느 테마가 선택될지는 도감 게시분에 따라 달라지므로, 이번 실행으로 새로 소모된 테마를 찾아 검증한다.
+new_theme = None
+for theme_key, ids in state.get("used_items_by_theme", {}).items():
+    if set(ids) - seed_used.get(theme_key, set()):
+        new_theme = theme_key
+newly_used = set(state["used_items_by_theme"][new_theme]) - seed_used.get(new_theme, set()) if new_theme else set()
+
 check(result is not None and result.exists(), "영상 파일 생성 단계까지 도달")
 check(calls["upload"] == 0, "유튜브 업로드 호출 0회 (드라이런)")
 check(calls["web"] == 0, "도감(history.json) 갱신 호출 0회 (드라이런)")
-check("bath" in state["used_items_by_theme"] and len(state["used_items_by_theme"]["bath"]) == 3, "욕실 상품 3종이 사용 처리됨")
+check(new_theme is not None and len(newly_used) == 3, f"새 회차 테마({new_theme}) 상품 3종이 사용 처리됨 ({sorted(newly_used)})")
 check("test_dryrun_01" in state["completed_slots"], "완료 슬롯 기록됨")
-check(any("욕실" in t or "욕실·샤워" in t for t in state.get("published_titles", [])) or len(state.get("published_titles", [])) == 5, f"게시 제목 잠금 5건 (실제 {len(state.get('published_titles', []))})")
+check(
+    new_theme is not None
+    and state.get("episode_counts_by_theme", {}).get(new_theme, 0)
+    == seed.get("episode_counts_by_theme", {}).get(new_theme, 0) + 1,
+    "회차 카운트가 1 증가",
+)
+check(
+    len(state.get("published_titles", [])) >= len(seed.get("published_titles", [])),
+    f"게시 제목 잠금 유지 ({len(state.get('published_titles', []))}건)",
+)
 
 print("\n=== B. 남은 상품이 없을 때 건너뛰기 ===")
 exhausted = json.loads(tmp_state.read_text(encoding="utf-8"))
@@ -135,7 +152,14 @@ auto_daily.check_episode = original_check
 state3 = json.loads(tmp_state.read_text(encoding="utf-8"))
 
 check(result3 is None, "사전 검증 실패 시 None 반환 (차단)")
-check(state3.get("used_items_by_theme", {}).get("bath", []) == [], "실패 시 욕실 상품이 소모되지 않음(상태 롤백)")
+
+def _norm_used(mapping):
+    return {k: sorted(v) for k, v in (mapping or {}).items()}
+
+check(
+    _norm_used(state3.get("used_items_by_theme")) == _norm_used(seed2.get("used_items_by_theme")),
+    "실패 시 새 상품이 소모되지 않음(상태 롤백)",
+)
 check("test_dryrun_03" not in state3.get("completed_slots", []), "슬롯이 완료 처리되지 않음")
 
 

@@ -591,6 +591,120 @@ THEMES: Dict[str, dict] = {
                 coupang_url="https://www.coupang.com/vp/products/7709524347?itemId=20662396489&vendorItemId=87735082174&lptag=AF7086198"
             )
         ]
+    },
+
+    "homecafe": {
+        "theme_name": "홈카페·커피",
+        "hook_title": "카페 커피값 아끼는\n홈카페 꿀템 TOP 3!",
+        "hook_voice": "커피 한 잔에 오천 원씩, 한 달이면 십오만 원이 그냥 나가고 있죠? 원두 갈고 내리고 라떼까지 집에서 되는, 쿠팡 홈카페 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "하루 커피 두 잔, 한 달 15만 원이었다면?",
+        "hook_caption2": "집이 카페 되는 홈카페 꿀템 3가지!",
+        "hook_image": str(assets / "homecafe_grinder.png"),
+        "hashtags": ["#홈카페", "#커피꿀템", "#전동커피그라인더", "#핸드드립", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="homecafe_grinder",
+                title="위즈웰 아로마 커피그라인더, WSG-9900",
+                header_badge="위즈웰 아로마 그라인더",
+                discount="46% 할인",
+                price="26,510원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 2,579)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="다이얼 하나로 분쇄도 세밀 조절!",
+                caption2="한 달 2,000명 넘게 찾은 그라인더",
+                voice_script="첫 번째는 위즈웰 아로마 커피그라인더입니다. 다이얼 하나로 분쇄도를 세밀하게 맞출 수 있어서, 드립부터 모카포트까지 원두를 그때그때 갈아 쓸 수 있어요.",
+                image_path=str(assets / "homecafe_grinder.png"),
+                coupang_url="https://www.coupang.com/vp/products/8472321870?itemId=24514067572&vendorItemId=91646025652&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="homecafe_dripper",
+                title="빈플러스 에센셜 웨이브 글라스 핸드드립 커피 4종 세트",
+                header_badge="핸드드립 4종 세트",
+                discount="54% 할인",
+                price="20,230원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 538)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="드리퍼·서버·여과지 한 번에!",
+                caption2="따로 살 것 없이 5분이면 카페 한 잔",
+                voice_script="두 번째는 빈플러스 핸드드립 4종 세트입니다. 드리퍼에 서버, 여과지에 계량스푼까지 다 들어 있어서, 처음 시작해도 따로 살 게 없어요.",
+                image_path=str(assets / "homecafe_dripper.png"),
+                coupang_url="https://www.coupang.com/vp/products/7829994107?itemId=21293548886&vendorItemId=88353399812&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="homecafe_frother",
+                title="홈플래닛 핸디형 전동 우유거품기",
+                header_badge="핸디형 전동 우유거품기",
+                discount="50% 할인",
+                price="6,420원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 4,654)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="우유 10초면 카페 라떼 완성!",
+                caption2="한 달 3,000명이 담아간 템",
+                voice_script="세 번째는 홈플래닛 전동 우유거품기입니다. 우유에 대고 십 초만 돌리면 거품이 폭신하게 올라와서, 집에서도 카페 라떼가 그대로 나옵니다.",
+                image_path=str(assets / "homecafe_frother.png"),
+                coupang_url="https://www.coupang.com/vp/products/7216511597?itemId=18276628727&vendorItemId=85422689306&lptag=AF7086198"
+            )
+        ]
+    },
+
+    "workout": {
+        "theme_name": "홈트·실내운동",
+        "hook_title": "헬스장 등록비 아끼는\n홈트 꿀템 TOP 3!",
+        "hook_voice": "추워져서 헬스장 갈 엄두도 안 나시죠? 거실 한 평이면 충분한, 쿠팡 홈트 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "헬스장 등록비, 이젠 안 내도 돼요",
+        "hook_caption2": "거실이 헬스장 되는 홈트 꿀템 3가지!",
+        "hook_image": str(assets / "workout_mat.png"),
+        "hashtags": ["#홈트", "#홈트레이닝", "#요가매트", "#폼롤러", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="workout_mat",
+                title="코멧 스포츠 NBR 요가매트 20mm, 네이비",
+                header_badge="20mm 두꺼운 요가매트",
+                discount="50% 할인",
+                price="15,090원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 18,205)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="무릎·팔꿈치 하나도 안 아프게!",
+                caption2="층간소음까지 잡는 20mm 두께",
+                voice_script="첫 번째는 코멧 스포츠 20밀리 요가매트입니다. 두께가 이십 밀리라 무릎 꿇고 해도 하나도 안 아프고, 층간소음도 확 줄어들어요.",
+                image_path=str(assets / "workout_mat.png"),
+                coupang_url="https://www.coupang.com/vp/products/4888844473?itemId=6370601435&vendorItemId=73665788078&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="workout_roller",
+                title="트라택 EPP 폼롤러 + 운동법 매뉴얼, 블랙",
+                header_badge="트라택 EPP 폼롤러",
+                discount="60% 할인",
+                price="14,210원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 6,514)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="운동 후 뭉친 근육 5분 정리",
+                caption2="운동법 매뉴얼까지 같이 와요",
+                voice_script="두 번째는 트라택 EPP 폼롤러입니다. 단단해서 종아리나 등 뭉친 곳을 눌러주면 오 분 만에 확 풀리고, 운동법 매뉴얼이 같이 와서 처음 써도 헤매지 않아요.",
+                image_path=str(assets / "workout_roller.png"),
+                coupang_url="https://www.coupang.com/vp/products/45079633?itemId=17426798113&vendorItemId=3380243063&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="workout_band",
+                title="코멧 스포츠 라텍스 루프밴드 5종 세트",
+                header_badge="5단계 라텍스 루프밴드",
+                discount="41% 할인",
+                price="6,690원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 19,297)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="강도 5단계라 하체 자극 확실!",
+                caption2="만 원도 안 해서 홈트 세트 완성",
+                voice_script="세 번째는 코멧 스포츠 라텍스 루프밴드 오 종 세트입니다. 강도가 다섯 단계라 스쿼트부터 힙업까지 골라 쓰면 되고, 만 원도 안 해서 홈트 세트가 이걸로 완성됩니다.",
+                image_path=str(assets / "workout_band.png"),
+                coupang_url="https://www.coupang.com/vp/products/306146810?itemId=965291522&vendorItemId=5369727509&lptag=AF7086198"
+            )
+        ]
     }
 }
 
