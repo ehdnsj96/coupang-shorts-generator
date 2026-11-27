@@ -705,6 +705,120 @@ THEMES: Dict[str, dict] = {
                 coupang_url="https://www.coupang.com/vp/products/306146810?itemId=965291522&vendorItemId=5369727509&lptag=AF7086198"
             )
         ]
+    },
+
+    "pet": {
+        "theme_name": "냥집사·멍집사 필수템",
+        "hook_title": "물·긁기·털 한 번에\n집사 필수템 TOP 3!",
+        "hook_voice": "물 안 마시는 냥이, 소파 긁는 냥이, 옷에 붙은 털까지 아직도 그냥 참고 계셨나요? 집사들이 매일 손이 가는, 쿠팡 반려동물 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "물·긁기·털, 아직도 참으셨죠?",
+        "hook_caption2": "집사들이 매일 쓰는 꿀템 3가지!",
+        "hook_image": str(assets / "pet_waterfountain.png"),
+        "hashtags": ["#반려동물", "#냥집사", "#멍집사", "#고양이용품", "#강아지용품", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="pet_waterfountain",
+                title="딩동펫 반려동물 파운틴 올스텐 정수기 2L",
+                header_badge="올스텐 자동 급수기",
+                discount="6% 쿠폰할인",
+                price="27,900원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 177)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="흐르는 물이라 안 마시던 냥이도",
+                caption2="4중 여과 필터 + 스테인리스 2L",
+                voice_script="첫 번째는 딩동펫 올스텐 자동 급수기입니다. 물이 계속 순환해서 흐르니까, 정수기 물을 안 마시던 고양이도 하루 종일 물을 찾게 되고, 스테인리스라 냄새도 덜 배요.",
+                image_path=str(assets / "pet_waterfountain.png"),
+                coupang_url="https://www.coupang.com/vp/products/7650109423?itemId=20352735961&vendorItemId=87437183413&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="pet_scratcher",
+                title="코멧 펫 고양이 쇼파 스크래쳐, 타원형, 1개",
+                header_badge="골판지 쇼파 스크래쳐",
+                discount="40% 할인",
+                price="5,690원",
+                tag="로켓배송",
+                card_badge_left="★ 5.0 (후기 2만 6,970)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="소파 긁는 손길 여기로 오세요",
+                caption2="캣닢 포함, 후기 2만 6천 개",
+                voice_script="두 번째는 코멧 펫 쇼파 스크래쳐입니다. 고양이가 소파 대신 이걸 긁도록 자리만 잡아주면 비싼 쇼파는 무사하고, 캣닢까지 들어 있어서 첫날부터 파고들어요.",
+                image_path=str(assets / "pet_scratcher.png"),
+                coupang_url="https://www.coupang.com/vp/products/335833200?itemId=17982326014&vendorItemId=85139110125&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="pet_brush",
+                title="코멧 펫 100% 고무헤드 반려동물 슬리커 브러쉬, 1개",
+                header_badge="고무헤드 슬리커 브러쉬",
+                discount="55% 할인",
+                price="6,820원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 3,491)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="죽은 털만 쏙 빗겨지는 고무핀",
+                caption2="빗질 싫어하던 아이도 순한 촉감",
+                voice_script="세 번째는 코멧 펫 고무헤드 슬리커 브러쉬입니다. 핀이 뾰족하지 않은 고무라 빗질을 싫어하던 아이도 가만히 있고, 죽은 털만 골라 빗겨져서 집 안 털 날림이 확 줄어요.",
+                image_path=str(assets / "pet_brush.png"),
+                coupang_url="https://www.coupang.com/vp/products/6237113432?itemId=12567158265&vendorItemId=79835363146&lptag=AF7086198"
+            )
+        ]
+    },
+
+    "camping": {
+        "theme_name": "캠핑·차박 꿀템",
+        "hook_title": "주말 캠핑 짐 절반으로\n캠핑·차박 꿀템 TOP 3!",
+        "hook_voice": "캠핑 갈 때마다 짐 싸다 지치시죠? 랜턴부터 앉을 자리, 테이블까지 한 번에 정리되는, 쿠팡 캠핑 꿀템 탑 쓰리입니다!",
+        "hook_caption1": "캠핑 짐 싸다 지치셨죠?",
+        "hook_caption2": "트렁크에 쏙 들어가는 꿀템 3가지!",
+        "hook_image": str(assets / "camping_lantern.png"),
+        "hashtags": ["#캠핑꿀템", "#차박", "#캠핑용품", "#감성캠핑", "#쿠팡추천"],
+        "products": [
+            ProductItem(
+                item_id="camping_lantern",
+                title="코멧 걸어서 사용하는 충전식 LED 감성 캠핑 랜턴, 블랙, 1개",
+                header_badge="충전식 LED 감성 랜턴",
+                discount="58% 할인",
+                price="8,290원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 2,450)",
+                card_badge_right="[프로필 01번 링크]",
+                caption1="텐트에 걸면 분위기 완성!",
+                caption2="충전식이라 건전지 살 일 없어요",
+                voice_script="첫 번째는 코멧 충전식 LED 캠핑 랜턴입니다. 고리에 걸어두면 텐트 안이 한 번에 감성 조명으로 바뀌고, 충전식이라 건전지 챙길 필요가 없어요.",
+                image_path=str(assets / "camping_lantern.png"),
+                coupang_url="https://www.coupang.com/vp/products/8512052933?itemId=24639798903&vendorItemId=91650673932&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="camping_stool",
+                title="코멧 아웃도어 휴대용 높이조절 캠핑스툴, 아몬드, 1개",
+                header_badge="높이조절 휴대 스툴",
+                discount="66% 할인",
+                price="5,990원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 2만 1,118)",
+                card_badge_right="[프로필 02번 링크]",
+                caption1="접으면 우산만 해지는 스툴",
+                caption2="놀이공원 줄 서기 필수템",
+                voice_script="두 번째는 코멧 아웃도어 높이조절 스툴입니다. 접으면 우산만 해져서 트렁크 한쪽에 쏙 들어가고, 놀이공원 줄 설 때도 그냥 펴서 앉으면 돼요.",
+                image_path=str(assets / "camping_stool.png"),
+                coupang_url="https://www.coupang.com/vp/products/8255331367?itemId=26330885882&vendorItemId=93308154253&lptag=AF7086198"
+            ),
+            ProductItem(
+                item_id="camping_table",
+                title="코멧 아웃도어 캠핑테이블 캠핑폴딩박스 + 식탁매트, 블랙",
+                header_badge="테이블 겸 폴딩박스",
+                discount="40% 할인",
+                price="12,340원",
+                tag="로켓배송",
+                card_badge_left="★ 4.5 (후기 5,887)",
+                card_badge_right="[프로필 03번 링크]",
+                caption1="짐은 안에, 상판은 테이블로!",
+                caption2="트렁크 정리까지 한 번에",
+                voice_script="세 번째는 코멧 캠핑 폴딩박스 테이블입니다. 짐은 박스 안에 넣고 뚜껑은 테이블로 쓰니까, 트렁크 정리와 식탁을 한 번에 해결할 수 있어요.",
+                image_path=str(assets / "camping_table.png"),
+                coupang_url="https://www.coupang.com/vp/products/5301822200?itemId=13841605055&vendorItemId=81091705765&lptag=AF7086198"
+            )
+        ]
     }
 }
 

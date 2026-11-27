@@ -116,6 +116,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         "sleep": ("숙면·침실", "🌙"),
         "homecafe": ("홈카페·커피", "☕"),
         "workout": ("홈트·운동", "🏋️"),
+        "pet": ("반려동물·집사", "🐾"),
+        "camping": ("캠핑·차박", "⛺"),
     }
 
     # 동영상 테마별 그룹 빌드 (카테고리가 늘어나면 이 목록만 확장하면 된다)
@@ -132,6 +134,8 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
         ("sleep", "🌙 숙면·침실", "🌙 숙면 부르는 침실 꿀템 TOP 3"),
         ("homecafe", "☕ 홈카페·커피", "☕ 홈카페·커피 꿀템 TOP 3"),
         ("workout", "🏋️ 홈트·운동", "🏋️ 홈트·실내운동 꿀템 TOP 3"),
+        ("pet", "🐾 반려동물", "🐾 냥집사·멍집사 필수템 TOP 3"),
+        ("camping", "⛺ 캠핑·차박", "⛺ 캠핑·차박 꿀템 TOP 3"),
     ]
 
     section_blocks = []
@@ -742,7 +746,7 @@ def generate_html(theme_name: str, featured_items: List[ProductItem], history_it
 
     // URL Hash support (#kitchen, #living, #food, #desk)
     const hash = window.location.hash.replace("#", "");
-    if (hash && ["kitchen", "living", "food", "desk", "bath", "car", "cleaning", "winter", "laundry", "sleep", "homecafe", "workout"].includes(hash)) {{
+    if (hash && ["kitchen", "living", "food", "desk", "bath", "car", "cleaning", "winter", "laundry", "sleep", "homecafe", "workout", "pet", "camping"].includes(hash)) {{
       const targetBtn = document.querySelector(`.pill-btn[data-filter="${{hash}}"]`);
       if (targetBtn) {{
         targetBtn.click();
